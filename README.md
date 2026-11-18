@@ -1,6 +1,6 @@
 # Blaya
 
-**Blender + Maya.** Maya-inspired navigation for Blender with some personal spice on top: familiar
+Maya-inspired navigation for Blender with some personal spice on top: familiar
 Alt+mouse controls, QWER tools, a marking menu and snapping pivot editing, plus quality-of-life
 features from my own workflow. Free, open source and DRM-free.
 
