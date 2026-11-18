@@ -1,0 +1,18 @@
+schema_version = "1.0.0"
+
+id = "blaya"
+version = "0.1.0"
+name = "Blaya"
+tagline = "Maya-inspired navigation with a personal touch and QoL features"
+maintainer = "Tom Berczeller"
+type = "add-on"
+
+blender_version_min = "5.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+copyright = ["2026 Tom Berczeller"]
+
+tags = ["3D View", "User Interface"]
+
+[permissions]
+files = "Writes its keymap preset to the user presets folder"
