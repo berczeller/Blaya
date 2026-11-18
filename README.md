@@ -1,16 +1,4 @@
-# Blaya
-
-Maya-inspired navigation for Blender with some personal spice on top: familiar
-Alt+mouse controls, QWER tools, a marking menu and snapping pivot editing, plus quality-of-life
-features from my own workflow. Free, open source and DRM-free.
-
-- Blender **5.2+** (developed and tested on 5.3)
-- License: **GPL-3.0-or-later**
-- Author: **Tom Berczeller**
-
----
-
-## Why Blaya exists
+## Why Blaya?
 
 I came to Blender from Maya, and for years my go-to way of making Blender feel like home was
 **Maya Config Pro** (MCP) by Form Affinity. It set up the navigation, hotkeys and marking menus I was used to,
@@ -182,6 +170,10 @@ keymap list. That's the only file it writes outside its own folder.
 - Blaya changes hotkeys in the 3D View and a few animation editors; other editors keep Blender's defaults.
 
 ## Credits
+
+- Author: **Tom Berczeller**
+- Blender **5.2+** (developed and tested on 5.3)
+- License: **GPL-3.0-or-later**
 
 - Inspired by Autodesk Maya's default navigation and hotkeys.
 - Inspired by **Maya Config Pro** by Form Affinity, which I used for years. Blaya is an independent,
