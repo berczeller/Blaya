@@ -42,7 +42,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 
 ## Install
 
-1. Download `Blaya-<version>.zip` (for example `Blaya-0.2.1.zip`) from [Releases](https://github.com/berczeller/Blaya/releases).
+1. Download `Blaya-<version>.zip` (for example `Blaya-0.3.0.zip`) from [Releases](https://github.com/berczeller/Blaya/releases).
 2. In Blender, open **Edit > Preferences > Get Extensions**, click the dropdown in the top right, pick **Install from Disk** and select the zip.
 3. Enable **Blaya**, open its preferences and click **Activate Blaya Keymap** (or pick *Blaya* in **Preferences > Keymap**).
 

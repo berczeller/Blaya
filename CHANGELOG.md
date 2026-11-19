@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-19
+
 ### Added
 - Island Colour preference for the tint of selected UV islands
 
@@ -57,7 +59,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.2.1...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/berczeller/Blaya/releases/tag/0.3.0
 [0.2.1]: https://github.com/berczeller/Blaya/releases/tag/0.2.1
 [0.2.0]: https://github.com/berczeller/Blaya/releases/tag/0.2.0
 [0.1.0]: https://github.com/berczeller/Blaya/releases/tag/0.1.0
