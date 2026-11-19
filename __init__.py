@@ -7,10 +7,12 @@ keyconfig preset (see ``keymap_install.py``). Everything else here is plain oper
 and menus that the keymap points at.
 """
 
+import time
+
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from . import keymap, keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_uv, ops_view, ui_axis
+from . import keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_uv, ops_view, ui_axis
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -233,14 +235,29 @@ _modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_uv, menus, ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 
+KEYMAP_WAIT = 5.0  # seconds to wait for the Blaya keyconfig to become active after loading
+_keymap_wait_start = [0.0]
+
+
 def _refresh_keymap():
-    """Reload the Blaya keymap when Blender built it before Blaya's operators were registered."""
+    """Rebuild the Blaya keymap once Blaya's operators are registered.
+
+    Blender can build the keymap before Blaya registers (at start-up), and turning Blaya off and on leaves
+    the keymap items pointing at the old operators. Either way the items lose their settings: 1 / 2 / 3
+    all ran smooth preview level 2 and D+C / F / G / X all started in Vertex mode. Reading those stale
+    items' properties can crash Blender, so the keymap is rebuilt instead of checked.
+    """
     try:
-        kc = bpy.context.window_manager.keyconfigs.active
-        if kc is not None and kc.name == keymap_install.KEYCONFIG_NAME and keymap.missing_properties(kc):
+        wm = bpy.context.window_manager
+        kc = wm.keyconfigs.active if wm is not None else None
+        if kc is not None and kc.name == keymap_install.KEYCONFIG_NAME:
             bpy.utils.keyconfig_set(keymap_install.ensure_preset())
+            return None
     except Exception as exc:  # never block start-up over the keymap
         print("Blaya: could not refresh the keymap:", exc)
+        return None
+    if time.monotonic() - _keymap_wait_start[0] < KEYMAP_WAIT:
+        return 0.25
     return None
 
 
@@ -250,6 +267,7 @@ def register():
     for mod in _modules:
         mod.register()
     keymap_install.ensure_preset()
+    _keymap_wait_start[0] = time.monotonic()
     bpy.app.timers.register(_refresh_keymap, first_interval=0.1)
 
 

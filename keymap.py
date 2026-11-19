@@ -102,33 +102,3 @@ def load(name="Blaya"):
     from bl_keymap_utils.io import keyconfig_init_from_data
     kc = bpy.context.window_manager.keyconfigs.new(name)
     keyconfig_init_from_data(kc, build())
-
-
-def missing_properties(kc):
-    """True when Blaya items in `kc` lost their operator properties.
-
-    Blender can load the keyconfig preset before add-ons register their operators. Items for an
-    operator that doesn't exist yet are created without their properties, so 1 / 2 / 3 all ran the
-    default smooth preview level and D+C / F / G / X all started pivot edit in Vertex mode.
-    """
-    patch = _load_sibling("keymap_patch.py", "blaya_keymap_patch")
-    for kmname, items in patch.KEYMAP_ADD.items():
-        km = kc.keymaps.get(kmname)
-        if km is None:
-            continue
-        for idname, ev, extra in items:
-            props = (extra or {}).get("properties")
-            if not idname.startswith("blaya.") or not props:
-                continue
-            sig = event_sig(ev)
-            for kmi in km.keymap_items:
-                kmi_mods = tuple(-1 if kmi.any else _mod_value(getattr(kmi, k)) for k in _MOD_KEYS)
-                if (kmi.idname == idname and kmi.type == sig[0] and kmi.value == sig[1] and kmi_mods == sig[2]
-                        and kmi.key_modifier == sig[3]):
-                    try:
-                        if not kmi.properties.is_property_set(props[0][0]):
-                            return True
-                    except (AttributeError, TypeError):
-                        return True
-                    break
-    return False
