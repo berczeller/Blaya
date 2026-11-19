@@ -197,24 +197,127 @@ class BLAYA_OT_uv_move(bpy.types.Operator):
     bl_idname = "blaya.uv_move"
     bl_label = "Move UVs (Auto Detach)"
 
+    drag: BoolProperty(name="Drag", description="Confirm the move on mouse release (tool drag) "
+                       "instead of with a click (G)", default=True)
+
     @classmethod
     def poll(cls, context):
         return _uv_poll(context)
 
     def invoke(self, context, event):
+        global _move_hint
         maybe_detach(context)
-        bpy.ops.transform.translate('INVOKE_DEFAULT', release_confirm=True)
+        _move_hint = True  # a custom pivot follows this move
+        bpy.ops.transform.translate('INVOKE_DEFAULT', release_confirm=self.drag)
         return {'FINISHED'}
 
 
 def maybe_detach(context):
     """Split the selection from its island when moving faces/islands (no-op for vertices/edges). Returns True if split."""
     ts = context.scene.tool_settings
-    face_like = ts.use_uv_select_island or (not ts.use_uv_select_sync and ts.uv_select_mode == 'FACE')
-    if _prefs(context).uv_auto_detach and face_like and not ts.use_uv_select_sync:
+    if not _prefs(context).uv_auto_detach or ts.use_uv_select_sync:
+        return False
+    if _wm_auto(context) and not ts.use_uv_select_island:
+        # Smart selection: the mode is whatever the last click picked (a box select keeps it),
+        # so look at the selection itself: whole faces selected = moving faces.
+        face_like = selection_has_faces(context)
+    else:
+        face_like = ts.use_uv_select_island or ts.uv_select_mode == 'FACE'
+    if face_like:
         bpy.ops.uv.select_split()
         return True
     return False
+
+
+def _face_split_wanted(context):
+    """Face-like selection where faces should come loose from their island when moved."""
+    ts = context.scene.tool_settings
+    if ts.use_uv_select_sync or not _prefs(context).uv_auto_detach:
+        return False
+    return ts.use_uv_select_island or ts.uv_select_mode == 'FACE'
+
+
+SPLIT_MAX_FACES = 20_000  # above this, only Blaya's own moves (Move tool drag, G) split
+
+
+def split_face_selection(context):
+    """Like uv.select_split, but without an operator (no undo step, safe from a timer): UVs that
+    only belong to partly selected faces are deselected, so ANY move (gizmo, G, tool) takes just the
+    selected faces and leaves their neighbours alone. Returns True if something changed."""
+    changed = False
+    for obj in context.objects_in_mode_unique_data:
+        if obj.type != 'MESH':
+            continue
+        bm = bmesh.from_edit_mesh(obj.data)
+        uv = bm.loops.layers.uv.active
+        if uv is None:
+            continue
+        faces = visible_faces(context, bm)
+        if len(faces) > SPLIT_MAX_FACES:
+            continue
+        if not any(f.uv_select for f in faces):
+            continue  # nothing face-selected: leave vertex/edge picks alone
+        dirty = False
+        for f in faces:
+            if f.uv_select:
+                continue
+            for l in f.loops:
+                if l.uv_select_vert or l.uv_select_edge:
+                    l.uv_select_vert_set(False)
+                    l.uv_select_edge_set(False)
+                    dirty = True
+        if dirty:
+            bmesh.update_edit_mesh(obj.data, loop_triangles=False, destructive=False)
+            changed = True
+    return changed
+
+
+SPLIT_INTERVAL = 0.2
+
+
+def _any_uv_editor(context):
+    """Like _uv_editor_open, but for timers (which have no screen in their context)."""
+    wm = context.window_manager
+    return any(a.type == 'IMAGE_EDITOR' and a.spaces.active.mode == 'UV'
+               for win in (wm.windows if wm else ()) for a in win.screen.areas)
+
+
+def _face_split_watch():
+    """Keep face selections split while a UV Editor is open (gizmo drags can't be intercepted)."""
+    try:
+        context = bpy.context
+        if (context.mode == 'EDIT_MESH' and _running is None and not _modal_running()
+                and _any_uv_editor(context) and _face_split_wanted(context)):
+            if split_face_selection(context):
+                if _custom_pivot is not None:
+                    _custom_pivot["sig"], _custom_pivot["co"] = selection_state(context)
+                for win in context.window_manager.windows:
+                    for area in win.screen.areas:
+                        if area.type in {'IMAGE_EDITOR', 'VIEW_3D'}:
+                            area.tag_redraw()
+    except Exception:
+        pass
+    return SPLIT_INTERVAL
+
+
+def selection_has_faces(context):
+    """True if any face shown in the UV Editor has all of its UVs selected."""
+    for obj in context.objects_in_mode_unique_data:
+        if obj.type != 'MESH':
+            continue
+        bm = bmesh.from_edit_mesh(obj.data)
+        uv = bm.loops.layers.uv.active
+        if uv is None:
+            continue
+        for f in visible_faces(context, bm):
+            if getattr(f, "uv_select", False) or all(_loop_uv_selected(l, uv) for l in f.loops):
+                return True
+    return False
+
+
+def _loop_uv_selected(loop, uv):
+    sel = getattr(loop, "uv_select_vert", None)
+    return loop[uv].select if sel is None else sel
 
 
 class BLAYA_OT_uv_straighten(bpy.types.Operator):
@@ -426,7 +529,7 @@ class BLAYA_OT_uv_pivot_edit(bpy.types.Operator):
             return
         space = context.space_data
         space.cursor_location = (float(tgt[0]), float(tgt[1]))
-        space.pivot_point = 'CURSOR'
+        claim_custom_pivot(context, space)
         self._placed = True
 
     def modal(self, context, event):
@@ -461,6 +564,131 @@ class BLAYA_OT_uv_pivot_edit(bpy.types.Operator):
         if typ in SNAP_KEYS or typ == 'D':
             return {'RUNNING_MODAL'}
         return {'PASS_THROUGH'}
+
+
+# A placed pivot belongs to the selection it was placed for, like Maya: once the UV selection
+# changes, the UV Editor goes back to its previous pivot (bounding box center by default).
+# While the selection only moves (a plain translation), the pivot travels with it, also like Maya.
+_custom_pivot = None  # {"prev": pivot_point to restore, "sig": selection signature, "co": (N,2) UVs}
+WATCH_INTERVAL = 0.15
+FOLLOW_EPS = 1e-6  # UV units: how evenly every selected UV must have moved to count as a translation
+
+
+def selection_state(context):
+    """(signature, coords): which UVs are selected, and where they are (same order)."""
+    sig, co = [], []
+    for obj in context.objects_in_mode_unique_data:
+        if obj.type != 'MESH':
+            continue
+        bm = bmesh.from_edit_mesh(obj.data)
+        uv = bm.loops.layers.uv.active
+        if uv is None:
+            continue
+        sel = [l for f in visible_faces(context, bm) for l in f.loops if _loop_uv_selected(l, uv)]
+        sig.append((obj.name, hash(tuple((l.face.index, l.vert.index) for l in sel))))
+        co.extend(tuple(l[uv].uv) for l in sel)
+    return tuple(sig), np.array(co, float).reshape(-1, 2)
+
+
+def selection_signature(context):
+    """Cheap fingerprint of which UVs are selected (not where they are)."""
+    return selection_state(context)[0]
+
+
+def translation_between(old, new):
+    """The common offset if every point moved by the same amount, else None (rotated, scaled...)."""
+    if old.shape != new.shape or not len(old):
+        return None
+    d = new - old
+    mean = d.mean(axis=0)
+    if np.abs(d - mean).max() > max(FOLLOW_EPS, 1e-4 * np.abs(mean).max()):
+        return None
+    return mean
+
+
+def claim_custom_pivot(context, space):
+    global _custom_pivot
+    if _custom_pivot is None:
+        prev = space.pivot_point if space.pivot_point != 'CURSOR' else 'BOUNDING_BOX_CENTER'
+    else:
+        prev = _custom_pivot["prev"]
+    space.pivot_point = 'CURSOR'
+    sig, co = selection_state(context)
+    _custom_pivot = {"prev": prev, "sig": sig, "co": co}
+    if not bpy.app.timers.is_registered(_watch_custom_pivot):
+        bpy.app.timers.register(_watch_custom_pivot, first_interval=WATCH_INTERVAL)
+
+
+def release_custom_pivot(context=None):
+    """Give the UV Editors their previous pivot back."""
+    global _custom_pivot
+    if _custom_pivot is None:
+        return
+    prev = _custom_pivot["prev"]
+    _custom_pivot = None
+    wm = (context or bpy.context).window_manager
+    for win in (wm.windows if wm else ()):
+        for area in win.screen.areas:
+            if area.type == 'IMAGE_EDITOR':
+                sp = area.spaces.active
+                if sp.pivot_point == 'CURSOR':
+                    sp.pivot_point = prev
+                area.tag_redraw()
+
+
+def _watch_custom_pivot():
+    if _custom_pivot is None:
+        return None
+    if _running is not None:
+        return WATCH_INTERVAL  # still placing it
+    global _move_hint
+    if _modal_running():
+        # Remember which kind of drag this is (a cancelled move must not leave the hint on for a rotate).
+        _move_hint = _modal_running(("TRANSFORM_OT_translate",))
+        return WATCH_INTERVAL  # mid-drag: follow once the move is confirmed
+    context = bpy.context
+    try:
+        if context.mode != 'EDIT_MESH':
+            release_custom_pivot(context)
+            return None
+        sig, co = selection_state(context)
+        if sig != _custom_pivot["sig"]:
+            release_custom_pivot(context)
+            return None
+        offset = translation_between(_custom_pivot["co"], co)
+        changed = not np.array_equal(_custom_pivot["co"], co)
+        if offset is not None and np.abs(offset).max() > FOLLOW_EPS and (_move_hint or _last_op_was_move(context)):
+            follow_custom_pivot(context, offset)
+        if changed:
+            _move_hint = False
+        _custom_pivot["co"] = co
+    except Exception:
+        release_custom_pivot(context)
+        return None
+    return WATCH_INTERVAL
+
+
+MOVE_OPS = {"TRANSFORM_OT_translate", "BLAYA_OT_uv_move"}
+_move_hint = False  # a move drag was seen since the last check (Move tool drag or a translate modal)
+
+
+def _last_op_was_move(context):
+    """Only a move drags the pivot along: rotating or scaling a single vertex around the pivot
+    also shifts it evenly, but the pivot must stay put then."""
+    ops = context.window_manager.operators
+    return bool(len(ops)) and ops[-1].bl_idname in MOVE_OPS
+
+
+def follow_custom_pivot(context, offset):
+    wm = context.window_manager
+    for win in (wm.windows if wm else ()):
+        for area in win.screen.areas:
+            if area.type == 'IMAGE_EDITOR':
+                sp = area.spaces.active
+                if sp.pivot_point == 'CURSOR':
+                    c = sp.cursor_location
+                    sp.cursor_location = (c[0] + float(offset[0]), c[1] + float(offset[1]))
+                    area.tag_redraw()
 
 
 class BLAYA_OT_uv_pivot_exit(bpy.types.Operator):
@@ -619,7 +847,7 @@ SETTLE_DELAY = 0.3  # seconds without edits before the island colours are rebuil
 _last_change = 0.0
 
 
-def _modal_running():
+def _modal_running(prefixes=("TRANSFORM_OT", "transform.")):
     """True while a transform (grab/rotate/scale drag) is running in any window."""
     wm = bpy.context.window_manager
     if wm is None:
@@ -629,7 +857,7 @@ def _modal_running():
             ops = win.modal_operators
         except AttributeError:
             return False
-        if any(op.bl_idname.startswith(("TRANSFORM_OT", "transform.")) for op in ops):
+        if any(op.bl_idname.startswith(prefixes) for op in ops):
             return True
     return False
 
@@ -698,6 +926,7 @@ def register():
     if _on_depsgraph not in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.append(_on_depsgraph)
     bpy.app.timers.register(_init_auto, first_interval=0.1)
+    bpy.app.timers.register(_face_split_watch, first_interval=SPLIT_INTERVAL, persistent=True)
 
 
 def unregister():
@@ -713,7 +942,8 @@ def unregister():
         _overlay_handle = None
     if _on_depsgraph in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.remove(_on_depsgraph)
-    for timer in (_init_auto, _settle_timer):
+    release_custom_pivot()
+    for timer in (_init_auto, _settle_timer, _watch_custom_pivot, _face_split_watch):
         if bpy.app.timers.is_registered(timer):
             bpy.app.timers.unregister(timer)
     _island_cache.clear()

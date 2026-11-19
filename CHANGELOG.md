@@ -6,6 +6,21 @@
 - Moving UV islands (especially in Face mode on dense meshes) was slow and could freeze Blender: the
   UV island colours in the 3D View were rebuilt on every frame of the drag. They now update once,
   a moment after you stop editing, and the rebuild itself is several times faster.
+- Auto-detach didn't work with smart (auto) selection: the select mode left by the last click decided it.
+  In smart mode Blaya now looks at the selection itself, and moving whole faces splits them.
+- Auto-detach only worked when dragging the selection with the Move tool, but the Move tool's drag
+  box-selects, so moves really go through its gizmo, which skipped it. Face and Island selections
+  are now kept split from their neighbours as soon as they're made, so the gizmo, G and the tool drag
+  all move just the selected faces. G also runs the auto-detach move.
+- D+V in the UV Editor ran Stitch (V) instead of the vertex pivot snap. Held-key combos now come
+  before plain keys in the keymap.
+
+### Changed
+- A UV pivot placed with D + V / C / F / G / X now belongs to the selection it was placed for, like Maya:
+  select something else and the UV Editor goes back to its previous pivot (bounding box center by
+  default) instead of staying on the 2D cursor.
+- Moving the selection carries its custom UV pivot along (Move tool drag, G, the gizmo); rotating or
+  scaling around it leaves it where it is.
 
 ## 0.2.0 — UV workflow
 

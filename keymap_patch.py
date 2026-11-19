@@ -793,6 +793,8 @@ KEYMAP_ADD['UV Editor'] += [
     ('blaya.uv_pivot_edit', {'type': 'F', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='FACE')),
     ('blaya.uv_pivot_edit', {'type': 'G', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='GRID')),
     ('blaya.uv_pivot_edit', {'type': 'X', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='NONE')),
+    # G: move with the same auto-detach as the Move tool (click to confirm, like Blender's G).
+    ('blaya.uv_move', {'type': 'G', 'value': 'PRESS'}, _p(drag=False)),
 ]
 # Ctrl+Tab select-mode popup is replaced by 1-4 and the marking menu.
 KEYMAP_REMOVE.setdefault('UV Editor', []).append(('wm.call_menu', {'type': 'TAB', 'value': 'PRESS', 'ctrl': True}))

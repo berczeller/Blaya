@@ -63,9 +63,11 @@ def apply_patch(data, add, remove):
         items = content.get("items")
         if items is None:
             continue
-        # Exact-modifier items before "any modifier" ones on the same key, so e.g. plain 1 reaches
+        # Held-key combos (D+V) first, since a plain V item also fires while D is held; then
+        # exact-modifier items before "any modifier" ones on the same key, so e.g. plain 1 reaches
         # smooth preview before the any+1 collection toggle.
-        new = sorted(add.get(name, ()), key=lambda it: bool(it[1].get("any", False)))
+        new = sorted(add.get(name, ()), key=lambda it: (not it[1].get("key_modifier"),
+                                                        bool(it[1].get("any", False))))
         drop = {(idname, event_sig(ev)) for idname, ev in remove.get(name, ())}
         if not new and not drop:
             continue
