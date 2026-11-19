@@ -4,9 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Island Colour preference for the tint of selected UV islands
+
 ### Changed
+- Only the selected UV islands are tinted in the 3D View, all with one colour, instead of every island in its own colour
+- Island Colour Opacity defaults to 0.25 (was 0.35)
 - The add-on page in Blender links to the GitHub repo and has a shorter tagline
 - Listed under the Modeling and UV categories in Blender's extension browser
+
+### Fixed
+- The UV island tint no longer z-fights with the mesh when the camera is far from it
 
 ## [0.2.1] - 2026-11-19
 

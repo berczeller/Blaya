@@ -140,12 +140,17 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         default=True,
     )
     uv_island_colors: BoolProperty(
-        name="Island Colours in 3D",
-        description="In Edit Mode, while a UV Editor is open, tint each UV island with its own colour in the 3D View",
+        name="Selected Islands in 3D",
+        description="In Edit Mode, while a UV Editor is open, tint the selected UV islands in the 3D View",
         default=True,
     )
     uv_island_alpha: FloatProperty(
-        name="Island Colour Opacity", default=0.35, min=0.05, max=1.0, subtype='FACTOR',
+        name="Island Colour Opacity", default=0.25, min=0.05, max=1.0, subtype='FACTOR',
+    )
+    uv_island_color: FloatVectorProperty(
+        name="Island Colour",
+        description="Tint of the selected UV islands in the 3D View",
+        subtype='COLOR_GAMMA', size=3, min=0.0, max=1.0, default=(0.2, 0.75, 1.0),
     )
     uv_show_hints: BoolProperty(
         name="Show Key Hints",
@@ -210,6 +215,7 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col.prop(self, "uv_island_colors")
         sub = col.column()
         sub.active = self.uv_island_colors
+        sub.prop(self, "uv_island_color")
         sub.prop(self, "uv_island_alpha", slider=True)
         col.prop(self, "uv_show_hints")
         layout.separator()

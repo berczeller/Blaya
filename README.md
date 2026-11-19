@@ -32,7 +32,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Pivot editing (D + V / C / F / G / X):** snap the pivot to vertices, edge points, face centers or the grid, with every target highlighted.
 - **Clipping Tool (Shift+C):** draw a line in any view to cut the selected meshes, keep one side or split them, with capping, live preview, length/angle readout and in-tool undo.
 - **UV Editor workflow:** QWER tools, smart click selection, 1 to 5 select modes, a UV marking menu, moving faces without stretching their neighbours, Shift+W straighten and D-key pivot placement.
-- **UV island colours in 3D:** while a UV Editor is open, each UV island is tinted in the 3D View.
+- **Selected UV islands in 3D:** while a UV Editor is open, the selected UV islands are tinted in the 3D View.
 - **Axis indicator presets** for Blender's navigation gizmo.
 - **No DRM, no network access, no telemetry.**
 
@@ -137,7 +137,7 @@ The line snaps to vertices of the selected meshes or to the grid. In orthographi
 | Place the 2D cursor | Shift+RMB (drag to move it) | Shift+RMB | - | Left-click no longer moves the cursor |
 | Edit the pivot with snapping | D+V / D+C / D+F / D+G / D+X | - | Hold D (+ V / C / X) | Places the 2D cursor and uses it as pivot, key hints in the bottom-right corner |
 
-While a UV Editor is open in Edit Mode, each UV island is tinted with its own colour in the 3D View (opacity and on/off in the preferences).
+While a UV Editor is open in Edit Mode, the selected UV islands are tinted with a single colour in the 3D View (colour, opacity and on/off in the preferences). With UV Sync Selection on, an island counts as selected when one of its faces is.
 
 ### Other
 
@@ -160,7 +160,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 | Viewport | Axis indicator preset: Blender Default, Large Gizmo, Simple Axes, Bold Simple Axes or Don't Change |
 | Pivot Edit | Snap radius, edge step, highlight snap points |
 | Clipping Tool | Starting keep mode, capping, vertex snap radius, key hints |
-| UV Editor | Smart selection, auto-detach on move, island colours in 3D and their opacity, key hints |
+| UV Editor | Smart selection, auto-detach on move, selected island tint in 3D (colour and opacity), key hints |
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |
 
 ## Known limitations
