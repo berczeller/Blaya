@@ -10,7 +10,7 @@ and menus that the keymap points at.
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from . import keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_uv, ops_view, ui_axis
+from . import keymap, keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_uv, ops_view, ui_axis
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -239,15 +239,29 @@ _modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_uv, menus, ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 
+def _refresh_keymap():
+    """Reload the Blaya keymap when Blender built it before Blaya's operators were registered."""
+    try:
+        kc = bpy.context.window_manager.keyconfigs.active
+        if kc is not None and kc.name == keymap_install.KEYCONFIG_NAME and keymap.missing_properties(kc):
+            bpy.utils.keyconfig_set(keymap_install.ensure_preset())
+    except Exception as exc:  # never block start-up over the keymap
+        print("Blaya: could not refresh the keymap:", exc)
+    return None
+
+
 def register():
     for cls in _classes:
         bpy.utils.register_class(cls)
     for mod in _modules:
         mod.register()
     keymap_install.ensure_preset()
+    bpy.app.timers.register(_refresh_keymap, first_interval=0.1)
 
 
 def unregister():
+    if bpy.app.timers.is_registered(_refresh_keymap):
+        bpy.app.timers.unregister(_refresh_keymap)
     for mod in reversed(_modules):
         mod.unregister()
     for cls in reversed(_classes):

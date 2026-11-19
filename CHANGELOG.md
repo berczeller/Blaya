@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+- After restarting Blender, 1 / 2 / 3 all set smooth preview level 2, D+C / F / G / X all started pivot edit in Vertex mode and the UV Editor's 1 to 5 ignored their modes. Blender builds the keymap before Blaya registers its operators, so those items lost their settings; Blaya now rebuilds its keymap once the operators exist
+
 ## [0.3.0] - 2026-11-19
 
 ### Added
