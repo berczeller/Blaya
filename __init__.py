@@ -10,7 +10,7 @@ and menus that the keymap points at.
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from . import keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_view, ui_axis
+from . import keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_uv, ops_view, ui_axis
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -126,6 +126,32 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         description="Screen distance (pixels) at which a clip line end snaps to a vertex instead of the grid",
         default=20, min=0, max=200, subtype='PIXEL',
     )
+    uv_smart_select: BoolProperty(
+        name="Smart Selection",
+        description="In the UV Editor a click picks the vertex, edge or face closest to the mouse. "
+                    "Keys 1-4 fix a mode, 5 goes back to smart selection",
+        default=True,
+        update=lambda self, context: setattr(context.window_manager, "blaya_uv_auto", self.uv_smart_select),
+    )
+    uv_auto_detach: BoolProperty(
+        name="Auto Detach on Move",
+        description="In Face or Island mode, moving a selection splits it from the rest of its UV island first, "
+                    "so neighbouring faces don't stretch",
+        default=True,
+    )
+    uv_island_colors: BoolProperty(
+        name="Island Colours in 3D",
+        description="In Edit Mode, while a UV Editor is open, tint each UV island with its own colour in the 3D View",
+        default=True,
+    )
+    uv_island_alpha: FloatProperty(
+        name="Island Colour Opacity", default=0.35, min=0.05, max=1.0, subtype='FACTOR',
+    )
+    uv_show_hints: BoolProperty(
+        name="Show Key Hints",
+        description="Show the UV pivot keys in the bottom-right corner while editing the UV pivot",
+        default=True,
+    )
     smooth_preview_shade_smooth: BoolProperty(
         name="Smooth Preview Shades Smooth",
         description="Show the smooth preview (2/3) with smooth shading, like Maya. Done with a temporary "
@@ -178,6 +204,16 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col.prop(self, "clip_show_hints")
         layout.separator()
         col = layout.column()
+        col.label(text="UV Editor", icon='UV')
+        col.prop(self, "uv_smart_select")
+        col.prop(self, "uv_auto_detach")
+        col.prop(self, "uv_island_colors")
+        sub = col.column()
+        sub.active = self.uv_island_colors
+        sub.prop(self, "uv_island_alpha", slider=True)
+        col.prop(self, "uv_show_hints")
+        layout.separator()
+        col = layout.column()
         col.label(text="Smooth Preview (1 / 2 / 3)", icon='MOD_SUBSURF')
         col.prop(self, "smooth_preview_shade_smooth")
 
@@ -193,7 +229,7 @@ class BLAYA_OT_activate_keymap(bpy.types.Operator):
         return {'FINISHED'}
 
 
-_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, menus, ui_axis)
+_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_uv, menus, ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 

@@ -747,3 +747,55 @@ KEYMAP_REMOVE.setdefault('3D View', []).append(
 # Shift+C in Object Mode is Blaya's Clipping Tool (Hammer-style cut of the selected meshes).
 KEYMAP_ADD.setdefault('Object Mode', []).append(
     ('blaya.clip_tool', {'type': 'C', 'value': 'PRESS', 'shift': True}, None))
+
+# ---------------------------------------------------------------------------- UV workflow (0.2.0)
+# The UV Editor items inherited above came from an old keymap: left-click placed the 2D cursor,
+# right-click selected, 4 pointed at a mesh operator. Replace them with Blaya's UV workflow.
+_UV_DROP = {
+    ('uv.select', 'RIGHTMOUSE', 'PRESS'),            # RMB select (now the UV marking menu)
+    ('transform.translate', 'RIGHTMOUSE', 'CLICK_DRAG'),
+    ('uv.cursor_set', 'LEFTMOUSE', 'CLICK'),         # left-click placed the 2D cursor instead of selecting
+    ('mesh.select_mode', 'FOUR', 'PRESS'),
+    ('wm.context_set_enum', 'ONE', 'PRESS'),
+    ('wm.context_set_enum', 'TWO', 'PRESS'),
+    ('wm.context_set_enum', 'THREE', 'PRESS'),
+}
+KEYMAP_ADD['UV Editor'] = [it for it in KEYMAP_ADD['UV Editor']
+                           if (it[0], it[1]['type'], it[1]['value']) not in _UV_DROP]
+
+
+def _p(**kw):
+    return {'properties': list(kw.items())}
+
+
+KEYMAP_ADD['UV Editor'] += [
+    # Q W E R tools, like the 3D View (W replaces Blender's "cycle select tools").
+    ('wm.tool_set_by_id', {'type': 'W', 'value': 'PRESS'}, _p(name='builtin.move')),
+    # Select modes: 1 vertex, 2 edge, 3 face, 4 island, 5 back to smart (auto) selection.
+    ('blaya.uv_select_mode', {'type': 'ONE', 'value': 'PRESS'}, _p(mode='VERTEX')),
+    ('blaya.uv_select_mode', {'type': 'TWO', 'value': 'PRESS'}, _p(mode='EDGE')),
+    ('blaya.uv_select_mode', {'type': 'THREE', 'value': 'PRESS'}, _p(mode='FACE')),
+    ('blaya.uv_select_mode', {'type': 'FOUR', 'value': 'PRESS'}, _p(mode='ISLAND')),
+    ('blaya.uv_select_mode', {'type': 'FIVE', 'value': 'PRESS'}, _p(mode='AUTO')),
+    # Click selects (smart: vertex / edge / face by proximity), Shift+click toggles, double-click = island.
+    ('blaya.uv_click_select', {'type': 'LEFTMOUSE', 'value': 'CLICK'}, None),
+    ('blaya.uv_click_select', {'type': 'LEFTMOUSE', 'value': 'CLICK', 'shift': True}, _p(toggle=True)),
+    ('uv.select_linked_pick', {'type': 'LEFTMOUSE', 'value': 'DOUBLE_CLICK'}, None),
+    # Right-click: UV marking menu. Shift+right-click places the 2D cursor (drag still moves it).
+    ('wm.call_menu_pie', {'type': 'RIGHTMOUSE', 'value': 'PRESS'}, _p(name='BLAYA_MT_uv_marking_menu')),
+    ('uv.cursor_set', {'type': 'RIGHTMOUSE', 'value': 'CLICK', 'shift': True}, None),
+    # Shift+W: straighten the selection on its average (auto horizontal / vertical).
+    ('blaya.uv_straighten', {'type': 'W', 'value': 'PRESS', 'shift': True}, _p(axis='ALIGN_AUTO')),
+    # Pivot (2D cursor) editing, same keys as the 3D View.
+    ('blaya.uv_pivot_exit', {'type': 'D', 'value': 'PRESS'}, None),
+    ('blaya.uv_pivot_edit', {'type': 'V', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='VERTEX')),
+    ('blaya.uv_pivot_edit', {'type': 'C', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='EDGE')),
+    ('blaya.uv_pivot_edit', {'type': 'F', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='FACE')),
+    ('blaya.uv_pivot_edit', {'type': 'G', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='GRID')),
+    ('blaya.uv_pivot_edit', {'type': 'X', 'value': 'PRESS', 'key_modifier': 'D'}, _p(snap='NONE')),
+]
+# Ctrl+Tab select-mode popup is replaced by 1-4 and the marking menu.
+KEYMAP_REMOVE.setdefault('UV Editor', []).append(('wm.call_menu', {'type': 'TAB', 'value': 'PRESS', 'ctrl': True}))
+# Move tool drag: split Face/Island selections from their island first (no stretching).
+KEYMAP_ADD.setdefault('Image Editor Tool: Uv, Move', []).append(
+    ('blaya.uv_move', {'type': 'LEFTMOUSE', 'value': 'CLICK_DRAG'}, None))

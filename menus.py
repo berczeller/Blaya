@@ -185,7 +185,66 @@ class BLAYA_MT_component_special(Menu):
         layout.operator("object.mode_set", text="Object Mode", icon='OBJECT_DATA').mode = 'OBJECT'
 
 
+class BLAYA_MT_uv_marking_menu(Menu):
+    bl_idname = "BLAYA_MT_uv_marking_menu"
+    bl_label = "UV Marking Menu"
+
+    def draw(self, context):
+        pie = self.layout.menu_pie()
+        # Same slots as the 3D marking menu: W vertex, E island (multi), N edge, SE face.
+        pie.operator("blaya.uv_select_mode", text="Vertex", icon='UV_VERTEXSEL').mode = 'VERTEX'
+        pie.operator("blaya.uv_select_mode", text="Island", icon='UV_ISLANDSEL').mode = 'ISLAND'
+        pie.operator("uv.unwrap", text="Unwrap", icon='UV')
+        pie.operator("blaya.uv_select_mode", text="Edge", icon='UV_EDGESEL').mode = 'EDGE'
+        pie.operator("uv.select_split", text="Split", icon='SCULPTMODE_HLT')
+        pie.operator("uv.stitch", text="Stitch", icon='AUTOMERGE_ON')
+        pie.operator("blaya.uv_straighten", text="Straighten", icon='ALIGN_JUSTIFY').axis = 'ALIGN_AUTO'
+        pie.operator("blaya.uv_select_mode", text="Face", icon='UV_FACESEL').mode = 'FACE'
+
+        pie.separator()
+        pie.separator()
+        col = pie.column()
+        gap = col.column()
+        gap.separator()
+        gap.scale_y = 6
+        wm = context.window_manager
+        ts = context.scene.tool_settings
+        row = col.box().row(align=True)
+        row.operator("blaya.uv_select_mode", text="Auto", icon='RESTRICT_SELECT_OFF',
+                     depress=getattr(wm, "blaya_uv_auto", False)).mode = 'AUTO'
+        row.prop(ts, "use_uv_select_sync", text="", icon='UV_SYNC_SELECT')
+        row.prop(ts, "uv_sticky_select_mode", text="", icon_only=True)
+        row = col.box().row(align=True)
+        row.operator("blaya.uv_straighten", text="", icon='EVENT_X').axis = 'ALIGN_X'
+        row.operator("blaya.uv_straighten", text="", icon='EVENT_Y').axis = 'ALIGN_Y'
+        row.menu("IMAGE_MT_uvs_align", text="", icon='ALIGN_CENTER')
+        row.operator("uv.select_all", text="", icon='SELECT_EXTEND').action = 'SELECT'
+        row.operator("uv.select_all", text="", icon='SELECT_SUBTRACT').action = 'DESELECT'
+        row.operator("uv.select_all", text="", icon='UV_SYNC_SELECT').action = 'INVERT'
+        row = col.box().row(align=True)
+        row.operator("uv.mark_seam", text="", icon='EDGESEL').clear = False
+        row.operator("uv.mark_seam", text="", icon='X').clear = True
+        row.operator("uv.pack_islands", text="", icon='PACKAGE')
+        row.operator("uv.average_islands_scale", text="", icon='FULLSCREEN_EXIT')
+        row.menu("BLAYA_MT_uv_pivot", text="", icon='PIVOT_CURSOR')
+
+
+class BLAYA_MT_uv_pivot(Menu):
+    bl_idname = "BLAYA_MT_uv_pivot"
+    bl_label = "UV Pivot"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="Place pivot (2D cursor), snapping to:")
+        for ident, label, _desc, icon, _n in SNAP_ITEMS:
+            layout.operator("blaya.uv_pivot_edit", text=label, icon=icon).snap = ident
+        layout.separator()
+        layout.prop(context.space_data, "pivot_point", text="Pivot")
+
+
 _classes = (
+    BLAYA_MT_uv_marking_menu,
+    BLAYA_MT_uv_pivot,
     BLAYA_MT_marking_menu,
     BLAYA_MT_view_pie,
     BLAYA_MT_pivot,

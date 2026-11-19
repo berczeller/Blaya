@@ -51,6 +51,11 @@ issues are welcome.
 - **Clipping Tool (Shift+C):** draw a line in any view to cut the selected meshes, keep one side or split
   into two objects, with capping, live preview, length/angle readout and in-tool undo. Inspired by the
   Hammer / s&box clipping tool.
+- **UV Editor workflow:** QWER tools, click to select (smart: the vertex, edge or face closest to the
+  mouse), 1-4 select modes, a UV marking menu, moving faces/islands without stretching their neighbours
+  (auto-detach), Shift+W to straighten a selection on its average, and D-key pivot placement with
+  highlighted snap targets.
+- **UV island colours in 3D:** while a UV Editor is open, each UV island is tinted in the 3D View.
 - **Axis indicator presets** for Blender's navigation gizmo / simple axes.
 - **No DRM, no network access, no telemetry.**
 
@@ -129,6 +134,24 @@ follows the view direction; in perspective it goes through the camera, so what y
 A small readout shows the line's length and angle, and a subtle cheat sheet sits in the bottom-left corner.
 After leaving the tool, the whole session is a single Ctrl+Z step.
 
+### UV Editor
+
+| Action | Blaya | Blender default | Maya default | Notes |
+|---|---|---|---|---|
+| Select / Move / Rotate / Scale tool | Q / W / E / R | W (cycle select tools), G / R / S | Q / W / E / R | Same as the 3D View |
+| Select | Click | Click | Click | Blaya's smart selection picks the vertex, edge or face closest to the mouse |
+| Toggle selection | Shift+click | Shift+click | Shift+click | |
+| Select an island | Double-click, or 4 then click | L / Ctrl+L | UV Shell (marking menu) | |
+| Select modes | 1 vertex, 2 edge, 3 face, 4 island, 5 smart | 1 / 2 / 3 + island toggle | Marking menu / F9-F11 | A fixed mode turns smart selection off until 5 |
+| Marking menu | RMB | Context menu | RMB | Modes, unwrap, split, stitch, straighten, align, seams, pack, pivot |
+| Move faces without stretching | Drag (Face / Island mode) | Y (split), then move | Cut / extract, then move | Auto-detach, can be turned off |
+| Straighten on the average | Shift+W | UV > Align | Align / Straighten (UV Toolkit) | Picks horizontal or vertical automatically |
+| Place the 2D cursor | Shift+RMB (drag to move it) | Shift+RMB | — | Left-click no longer moves the cursor |
+| Edit the pivot with snapping | D+V / D+C / D+F / D+G / D+X | — | Hold D (+ V / C / X) | Places the 2D cursor and uses it as pivot; key hints in the bottom-right corner |
+
+While a UV Editor is open in Edit Mode, each UV island is tinted with its own colour in the 3D View
+(opacity and on/off in the preferences).
+
 ### Other
 
 | Action | Blaya | Blender default | Maya default |
@@ -161,6 +184,7 @@ keymap list. That's the only file it writes outside its own folder.
   or Don't Change).
 - **Pivot Edit:** snap radius, edge step, highlight snap points.
 - **Clipping Tool:** starting keep mode, capping, vertex snap radius, key hints.
+- **UV Editor:** smart selection, auto-detach on move, island colours in 3D (and their opacity), key hints.
 - **Smooth Preview:** show the preview shaded smooth (done with a temporary modifier, never on the mesh).
 
 ## Known limitations
