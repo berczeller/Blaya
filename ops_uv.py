@@ -5,6 +5,7 @@ pivot (2D cursor) editing with snapping, and UV island colours in the 3D View.
 """
 
 import colorsys
+import time
 
 import bmesh
 import bpy
@@ -527,37 +528,47 @@ def uv_islands(bm):
     return [[f for f in isl if not f.hide] for isl in islands if any(not f.hide for f in isl)]
 
 
-MAX_ISLAND_FACES = 300_000
+MAX_ISLAND_FACES = 200_000
 
 
 def _build_batch(obj, alpha):
+    data = build_island_arrays(obj, alpha)
+    if data is None:
+        return None
+    sh = gpu.shader.from_builtin('SMOOTH_COLOR')
+    return batch_for_shader(sh, 'TRIS', {"pos": data[0], "color": data[1]})
+
+
+def build_island_arrays(obj, alpha):
+    """(positions, colours) of the island-coloured triangles in object space, or None."""
     bm = bmesh.from_edit_mesh(obj.data)
     if len(bm.faces) > MAX_ISLAND_FACES:
         return None
     islands = uv_islands(bm)
-    bm.verts.ensure_lookup_table()
-    tris = bm.calc_loop_triangles()
-    face_island = {}
+    if not islands:
+        return None
+    bm.verts.index_update()
+    bm.faces.index_update()
+    face_island = np.full(len(bm.faces), -1, np.int32)
     for i, isl in enumerate(islands):
-        for f in isl:
-            face_island[f.index] = i
+        face_island[[f.index for f in isl]] = i
+    tris = bm.calc_loop_triangles()
+    if not tris:
+        return None
+    tri_vert = np.array([[l.vert.index for l in t] for t in tris], np.int32)
+    tri_face = np.array([t[0].face.index for t in tris], np.int32)
+    keep = face_island[tri_face] >= 0
+    tri_vert, tri_face = tri_vert[keep], tri_face[keep]
+    if not len(tri_face):
+        return None
+    co = np.array([v.co for v in bm.verts], np.float32)
+    normals = np.array([f.normal for f in bm.faces], np.float32)
     dims = obj.dimensions
     eps = 1e-4 * max(max(dims), 1e-3) / max(max(obj.scale), 1e-6)
-    pos, col = [], []
-    for tri in tris:
-        f = tri[0].face
-        i = face_island.get(f.index)
-        if i is None:
-            continue
-        c = island_color(i, alpha)
-        n = f.normal * eps
-        for l in tri:
-            pos.append(tuple(l.vert.co + n))
-            col.append(c)
-    if not pos:
-        return None
-    sh = gpu.shader.from_builtin('SMOOTH_COLOR')
-    return batch_for_shader(sh, 'TRIS', {"pos": pos, "color": col})
+    pos = co[tri_vert] + (normals[tri_face] * eps)[:, None, :]
+    palette = np.array([island_color(i, alpha) for i in range(len(islands))], np.float32)
+    col = np.repeat(palette[face_island[tri_face]], 3, axis=0)
+    return pos.reshape(-1, 3), col
 
 
 def _uv_editor_open(context):
@@ -581,12 +592,15 @@ def _draw_islands():
     gpu.state.blend_set('ALPHA')
     gpu.state.depth_test_set('LESS_EQUAL')
     gpu.state.depth_mask_set(False)
+    settled = _settled()
     for obj in context.objects_in_mode_unique_data:
         if obj.type != 'MESH':
             continue
         key = (obj.data.name, round(prefs.uv_island_alpha, 3))
         cached = _island_cache.get(obj.name)
-        if cached is None or cached[0] != key or obj.name in _dirty:
+        # While edits keep coming (dragging UVs or vertices) keep the previous colours;
+        # rebuilding on every frame made dragging crawl on dense meshes.
+        if cached is None or cached[0] != key or (obj.name in _dirty and settled):
             _island_cache[obj.name] = (key, _build_batch(obj, prefs.uv_island_alpha))
             _dirty.discard(obj.name)
         batch = _island_cache[obj.name][1]
@@ -601,8 +615,49 @@ def _draw_islands():
     gpu.state.blend_set('NONE')
 
 
+SETTLE_DELAY = 0.3  # seconds without edits before the island colours are rebuilt
+_last_change = 0.0
+
+
+def _modal_running():
+    """True while a transform (grab/rotate/scale drag) is running in any window."""
+    wm = bpy.context.window_manager
+    if wm is None:
+        return False
+    for win in wm.windows:
+        try:
+            ops = win.modal_operators
+        except AttributeError:
+            return False
+        if any(op.bl_idname.startswith(("TRANSFORM_OT", "transform.")) for op in ops):
+            return True
+    return False
+
+
+def _settled():
+    return time.monotonic() - _last_change >= SETTLE_DELAY and not _modal_running()
+
+
+def _settle_timer():
+    if not _dirty:
+        return None
+    wait = SETTLE_DELAY - (time.monotonic() - _last_change)
+    if wait > 0:
+        return wait + 0.01
+    if _modal_running():
+        return 0.1
+    wm = bpy.context.window_manager
+    for win in (wm.windows if wm else ()):
+        for area in win.screen.areas:
+            if area.type == 'VIEW_3D':
+                area.tag_redraw()
+    return None
+
+
 @bpy.app.handlers.persistent
 def _on_depsgraph(scene, depsgraph):
+    global _last_change
+    marked = False
     for upd in depsgraph.updates:
         if upd.is_updated_geometry and isinstance(upd.id, (bpy.types.Object, bpy.types.Mesh)):
             # Mesh updates name the mesh; drop every object using it.
@@ -611,6 +666,11 @@ def _on_depsgraph(scene, depsgraph):
                 obj = bpy.data.objects.get(obj_name)
                 if obj is None or obj.name == name or (obj.data is not None and obj.data.name == name):
                     _dirty.add(obj_name)
+                    marked = True
+    if marked:
+        _last_change = time.monotonic()
+        if not bpy.app.timers.is_registered(_settle_timer):
+            bpy.app.timers.register(_settle_timer, first_interval=SETTLE_DELAY + 0.01)
 
 
 # --------------------------------------------------------------------------- registration
@@ -653,8 +713,9 @@ def unregister():
         _overlay_handle = None
     if _on_depsgraph in bpy.app.handlers.depsgraph_update_post:
         bpy.app.handlers.depsgraph_update_post.remove(_on_depsgraph)
-    if bpy.app.timers.is_registered(_init_auto):
-        bpy.app.timers.unregister(_init_auto)
+    for timer in (_init_auto, _settle_timer):
+        if bpy.app.timers.is_registered(timer):
+            bpy.app.timers.unregister(timer)
     _island_cache.clear()
     _dirty.clear()
     for cls in reversed(_classes):

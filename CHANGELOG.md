@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — UV fixes
+
+### Fixed
+- Moving UV islands (especially in Face mode on dense meshes) was slow and could freeze Blender: the
+  UV island colours in the 3D View were rebuilt on every frame of the drag. They now update once,
+  a moment after you stop editing, and the rebuild itself is several times faster.
+
 ## 0.2.0 — UV workflow
 
 ### Added
