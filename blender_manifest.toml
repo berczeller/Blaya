@@ -3,8 +3,9 @@ schema_version = "1.0.0"
 id = "blaya"
 version = "0.2.1"
 name = "Blaya"
-tagline = "Maya-inspired navigation with a personal touch and QoL features"
+tagline = "Maya-style navigation, hotkeys and modeling tools"
 maintainer = "Tom Berczeller"
+website = "https://github.com/berczeller/Blaya"
 type = "add-on"
 
 blender_version_min = "5.2.0"
@@ -12,7 +13,7 @@ blender_version_min = "5.2.0"
 license = ["SPDX:GPL-3.0-or-later"]
 copyright = ["2026 Tom Berczeller"]
 
-tags = ["3D View", "User Interface"]
+tags = ["3D View", "Modeling", "UV", "User Interface"]
 
 [permissions]
 files = "Writes its keymap preset to the user presets folder"
