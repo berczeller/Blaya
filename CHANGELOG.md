@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-19
+
 ### Changed
 - Pivot editing (D + V / C / F / G / X) uses a move gizmo: drag its center to move the pivot on the view plane, or an axis to move it along that axis only. Snapping applies while dragging (along the axis for axis drags), Ctrl turns it off, and clicking a highlighted point still jumps to it. The drag-anywhere placement with the orange guide line is gone
 - The pivot gizmo follows the Transform Orientation in the header and shows the pivot's coordinates in the header
@@ -69,7 +71,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/berczeller/Blaya/releases/tag/0.4.0
 [0.3.0]: https://github.com/berczeller/Blaya/releases/tag/0.3.0
 [0.2.1]: https://github.com/berczeller/Blaya/releases/tag/0.2.1
 [0.2.0]: https://github.com/berczeller/Blaya/releases/tag/0.2.0
