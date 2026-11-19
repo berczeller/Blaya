@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-19
+
+### Fixed
+- Blaya no longer reads its old keymap items when it loads. Right after Blaya is turned off and on, those items still point at the removed operators, and reading them can crash Blender (it did when the add-on was reloaded from a script). Blaya now rebuilds its keymap after loading instead of inspecting it, which also covers turning it off and on
+
 ## [0.4.0] - 2026-11-19
 
 ### Changed
@@ -71,7 +76,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.4.1...HEAD
+[0.4.1]: https://github.com/berczeller/Blaya/releases/tag/0.4.1
 [0.4.0]: https://github.com/berczeller/Blaya/releases/tag/0.4.0
 [0.3.0]: https://github.com/berczeller/Blaya/releases/tag/0.3.0
 [0.2.1]: https://github.com/berczeller/Blaya/releases/tag/0.2.1
