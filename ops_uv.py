@@ -396,10 +396,9 @@ class BLAYA_OT_uv_pivot_edit(bpy.types.Operator):
             d = np.linalg.norm(a + ab * t[:, None] - mouse, axis=1)
             i = int(np.argmin(d))
             if d[i] <= radius:
-                s = piv.quantize(float(t[i]), prefs.pivot_edge_step / 100.0)  # UV edges are flat: no perspective
                 e = geo["edges"][i]
                 self._hot_edge = i
-                self._hot = e[0] + (e[1] - e[0]) * s
+                self._hot = (e[0] + e[1]) * 0.5  # edges snap to their midpoint only
         elif self.snap == 'GRID':
             step = self._grid_step(region)
             self._hot = np.round(to_uv(region, mouse) / step) * step
@@ -465,9 +464,6 @@ class BLAYA_OT_uv_pivot_edit(bpy.types.Operator):
                     e = geo["edges"][self._hot_edge]
                     ea, eb = to_region(region, e)
                     lines(np.array([[ea, eb]]), 4.0, piv.COL_HOT)
-                    stops = [s for s in piv.edge_stops(prefs.pivot_edge_step / 100.0) if s != 0.5]
-                    if stops:
-                        dots(ea + np.outer(stops, eb - ea), 6.0, piv.COL_TICK)
                     dots([(ea + eb) / 2], 11.0, piv.COL_MIDPOINT)
             elif self.snap == 'GRID' and self._hot is not None:
                 step = self._grid_step(region)

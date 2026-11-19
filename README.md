@@ -29,7 +29,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Space bar:** tap toggles perspective/orthographic, hold opens a view pie (ortho views, Quad View, splits, camera) with a label showing the view name and axis.
 - **Quad View, Maya style:** leaving Quad View maximizes the pane under the mouse.
 - **Smooth preview (1 / 2 / 3):** non-destructive, uses its own modifiers and never touches your mesh data or your Subdivision modifiers.
-- **Pivot editing (D + V / C / F / G / X):** snap the pivot to vertices, edge points, face centers or the grid, with every target highlighted.
+- **Pivot editing (D + V / C / F / G / X):** a move gizmo on the pivot. Drag its center or one of its axes, snapping to vertices, edge midpoints, face centers or the grid, with every target highlighted.
 - **Clipping Tool (Shift+C):** draw a line in any view to cut the selected meshes, keep one side or split them, with capping, live preview, length/angle readout and in-tool undo.
 - **UV Editor workflow:** QWER tools, smart click selection, 1 to 5 select modes, a UV marking menu, moving faces without stretching their neighbours, Shift+W straighten and D-key pivot placement.
 - **Selected UV islands in 3D:** while a UV Editor is open, the selected UV islands are tinted in the 3D View.
@@ -99,13 +99,21 @@ The Blender column is Blender 5.3's default keymap (left-click select). The Maya
 | Action | Blaya | Blender default | Maya default | Notes |
 |---|---|---|---|---|
 | Snap pivot to vertices | D+V | Ctrl+. (Affect Only Origins) + snapping | Hold D + hold V | Snap targets are highlighted |
-| Snap pivot to edges | D+C | - | Hold D + hold C (curves) | Steps along the edge (5% by default), midpoint always available |
+| Snap pivot to edge midpoints | D+C | - | Hold D + hold C (curves) | Midpoints only |
 | Snap pivot to face centers | D+F | - | - | Blaya addition |
 | Snap pivot to the grid | D+G | - | Hold D + hold X | |
 | Move pivot freely | D+X | - | Hold D | |
 | Finish pivot editing | D, Enter, Esc, RMB | Ctrl+. again | Release D | Toggle instead of hold |
 
-While editing the pivot, V / C / F / G / X switch the snap target, click or drag places the pivot, and navigation keeps working.
+While editing the pivot, a move gizmo sits on it:
+
+- Drag the white center to move the pivot on the view plane. In orthographic views the depth coordinate never changes.
+- Drag an axis arrow to move it along that axis only. The arrows follow the Transform Orientation in the header (Global, Local, View, Cursor), and an axis pointing at you is hidden.
+- While dragging, the pivot snaps to the highlighted target under the mouse (an axis drag takes the target's position along that axis) or to the grid with G. Hold Ctrl to drag without snapping, Esc or RMB cancels the drag.
+- Click a highlighted point to put the pivot right on it. When points overlap on screen, the one closest to you wins.
+- V / C / F / G / X switch the snap target, the header shows the pivot's coordinates, and navigation keeps working.
+
+Only the origin moves: rotation, scale and the geometry stay where they are, so Mirror and other modifiers that use the origin pick up the exact position.
 
 ### Clipping Tool (Shift+C, object mode)
 
@@ -158,7 +166,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 |---|---|
 | Space Bar | Tap action (perspective/orthographic or Quad View), pie menu delay, view name label (on/off, duration, rounding, border, shadow, colours) |
 | Viewport | Axis indicator preset: Blender Default, Large Gizmo, Simple Axes, Bold Simple Axes or Don't Change |
-| Pivot Edit | Snap radius, edge step, highlight snap points |
+| Pivot Edit | Snap radius, highlight snap points |
 | Clipping Tool | Starting keep mode, capping, vertex snap radius, key hints |
 | UV Editor | Smart selection, auto-detach on move, selected island tint in 3D (colour and opacity), key hints |
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |

@@ -4,8 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+- Pivot editing (D + V / C / F / G / X) uses a move gizmo: drag its center to move the pivot on the view plane, or an axis to move it along that axis only. Snapping applies while dragging (along the axis for axis drags), Ctrl turns it off, and clicking a highlighted point still jumps to it. The drag-anywhere placement with the orange guide line is gone
+- The pivot gizmo follows the Transform Orientation in the header and shows the pivot's coordinates in the header
+- Edge snapping (D+C, in the 3D View and the UV Editor) only snaps to edge midpoints; the Edge Snap Step preference is removed
+
 ### Fixed
 - After restarting Blender, 1 / 2 / 3 all set smooth preview level 2, D+C / F / G / X all started pivot edit in Vertex mode and the UV Editor's 1 to 5 ignored their modes. Blender builds the keymap before Blaya registers its operators, so those items lost their settings; Blaya now rebuilds its keymap once the operators exist
+- Moving the pivot in a perspective view slid it along a camera-facing plane, shifting it on every axis at once and throwing off Mirror modifiers
+- Snap points that overlap on screen (front and back corners in orthographic views) now pick the one closest to the viewer
 
 ## [0.3.0] - 2026-11-19
 

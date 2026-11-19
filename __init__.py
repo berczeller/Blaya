@@ -89,15 +89,10 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         name="Pivot Snap Radius", description="Screen distance (pixels) at which the pivot jumps to a snap point",
         default=40, min=5, max=200, subtype='PIXEL',
     )
-    pivot_edge_step: FloatProperty(
-        name="Edge Snap Step",
-        description="When snapping the pivot to an edge (D+C), move along it in steps of this percentage "
-                    "of the edge length (5% = 21 stops including both ends). 0 slides freely",
-        default=5.0, min=0.0, max=50.0, soft_min=1.0, precision=1, step=100, subtype='PERCENTAGE',
-    )
     pivot_show_candidates: BoolProperty(
         name="Highlight Snap Points",
-        description="While editing the pivot, highlight every point it can snap to (vertices, edges, face centers)",
+        description="While editing the pivot, highlight every point it can snap to (vertices, edge midpoints, "
+                    "face centers)",
         default=True,
     )
     clip_cap_default: BoolProperty(
@@ -198,7 +193,6 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col = layout.column()
         col.label(text="Pivot Edit (D + V / C / F / G / X)", icon='OBJECT_ORIGIN')
         col.prop(self, "pivot_snap_radius")
-        col.prop(self, "pivot_edge_step")
         col.prop(self, "pivot_show_candidates")
         layout.separator()
         col = layout.column()
