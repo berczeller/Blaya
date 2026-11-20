@@ -675,9 +675,12 @@ class BLAYA_OT_pivot_edit(bpy.types.Operator):
             context.area.tag_redraw()
         if _running is self:
             _running = None
-        return {'FINISHED'} if self._placed else {'CANCELLED'}
+        self._result = {'FINISHED'} if self._placed else {'CANCELLED'}
+        return self._result
 
     def modal(self, context, event):
+        if getattr(self, "_result", None) is not None:
+            return self._result  # already finished (e.g. driven from a script): just let Blender drop it
         if context.mode != 'OBJECT' or context.area is None:
             return self.finish(context)
         context.area.tag_redraw()
