@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
 ### Added
 - Quick rotation: in Object Mode, hold E and tap X, Y or Z to rotate the selected objects by a typed angle. A box at the mouse opens with the last angle selected (Enter repeats it), the rotation previews live, each object turns around its own origin along the header's Transform Orientation, Enter or a click applies and Esc restores
 
@@ -82,7 +84,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/berczeller/Blaya/releases/tag/0.5.0
 [0.4.1]: https://github.com/berczeller/Blaya/releases/tag/0.4.1
 [0.4.0]: https://github.com/berczeller/Blaya/releases/tag/0.4.0
 [0.3.0]: https://github.com/berczeller/Blaya/releases/tag/0.3.0

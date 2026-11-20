@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blaya"
-version = "0.4.1"
+version = "0.5.0"
 name = "Blaya"
 tagline = "Maya-style navigation, hotkeys and modeling tools"
 maintainer = "Tom Berczeller"
