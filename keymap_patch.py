@@ -801,3 +801,9 @@ KEYMAP_REMOVE.setdefault('UV Editor', []).append(('wm.call_menu', {'type': 'TAB'
 # Move tool drag: split Face/Island selections from their island first (no stretching).
 KEYMAP_ADD.setdefault('Image Editor Tool: Uv, Move', []).append(
     ('blaya.uv_move', {'type': 'LEFTMOUSE', 'value': 'CLICK_DRAG'}, None))
+# ---------------------------------------------------------------------------- quick rotation
+# Hold E (the Rotate tool key) and tap X / Y / Z: rotate the selected objects by a typed angle.
+# Held-key chords are placed before plain keys, so X / Y / Z keep their own jobs otherwise.
+KEYMAP_ADD.setdefault('Object Mode', []).extend(
+    ('blaya.quick_rotate', {'type': axis, 'value': 'PRESS', 'key_modifier': 'E'}, _p(axis=axis))
+    for axis in ('X', 'Y', 'Z'))

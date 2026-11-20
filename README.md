@@ -25,6 +25,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 
 - **Maya navigation:** Alt+LMB orbit, Alt+MMB pan, Alt+RMB dolly, Alt+wheel zoom, F to frame.
 - **QWER tools:** select, move, rotate, scale.
+- **Quick rotation (hold E + X / Y / Z):** type an angle in a small box at the mouse and the selected objects turn by it, live, each around its own origin.
 - **Marking menu (RMB):** component modes, object mode, isolate, shading, selection, create, freeze/reset transforms and pivot tools.
 - **Space bar:** tap toggles perspective/orthographic, hold opens a view pie (ortho views, Quad View, splits, camera) with a label showing the view name and axis.
 - **Quad View, Maya style:** leaving Quad View maximizes the pane under the mouse.
@@ -81,6 +82,22 @@ The Blender column is Blender 5.3's default keymap (left-click select). The Maya
 | Grow / shrink selection | Shift+. / Shift+, | Ctrl+Numpad + / Ctrl+Numpad - | > / < | |
 | Loop select (edit mode) | Double-click | Alt+click | Double-click | |
 | Toggle vertex snapping | Ctrl+V | Shift+Tab (snap) | Hold V | Toggle instead of hold |
+| Rotate by a typed angle (object mode) | Hold E + X / Y / Z | R, X / Y / Z, angle, Enter | - | Box at the mouse, see below |
+
+#### Quick rotation (hold E + X / Y / Z, object mode)
+
+Hold E (the Rotate tool key) and tap X, Y or Z. A box opens next to the cursor with the last angle used (90 the first time), already selected:
+
+| Key | Action |
+|---|---|
+| Digits, `-`, `.` or `,` | type the angle; `-` flips the sign |
+| Enter, click | apply (Enter right away repeats the last angle) |
+| Esc, right-click | cancel and restore |
+| X / Y / Z | switch the axis |
+| Backspace / Ctrl+Backspace | delete a character / clear |
+| Alt + mouse, wheel | navigate |
+
+The selection turns live while you type, each object around its own origin, along the axis of the header's Transform Orientation (Global, Local, ...). Releasing E after the box opens doesn't matter. Each rotation is one undo step, and angles a hair off a whole degree are rounded, so four -90 turns end at exactly 0.
 
 ### Modeling
 

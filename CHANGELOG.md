@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Quick rotation: in Object Mode, hold E and tap X, Y or Z to rotate the selected objects by a typed angle. A box at the mouse opens with the last angle selected (Enter repeats it), the rotation previews live, each object turns around its own origin along the header's Transform Orientation, Enter or a click applies and Esc restores
+
 ## [0.4.1] - 2026-11-19
 
 ### Fixed
