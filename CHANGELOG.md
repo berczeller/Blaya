@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Alt + middle mouse pans in the Shader, Geometry Nodes and Compositor editors, like in the 3D View (it replaces Blender's "move backdrop image" on that input; Alt + right mouse stays with Node Wrangler)
+
+### Fixed
+- Middle mouse no longer panned in the node editors and other 2D editors (Graph Editor, Dope Sheet, Timeline, Sequencer): a leftover from Blaya's original keymap removed Blender's default middle-mouse pan
+
 ## [0.5.0] - 2026-11-20
 
 ### Added

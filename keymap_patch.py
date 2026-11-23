@@ -714,7 +714,6 @@ KEYMAP_REMOVE = {'3D View': [('view3d.cursor3d', {'shift': True, 'type': 'RIGHTM
                     ('ui.view_item_select', {'shift': True, 'type': 'LEFTMOUSE', 'value': 'PRESS'}),
                     ('ui.view_item_delete', {'type': 'X', 'value': 'PRESS'}),
                     ('ui.region_clear_filter', {'alt': True, 'type': 'F', 'value': 'PRESS'})],
- 'View2D': [('view2d.pan', {'type': 'MIDDLEMOUSE', 'value': 'PRESS'})],
  'Weight Paint': [('paint.weight_paint', {'ctrl': True, 'type': 'LEFTMOUSE', 'value': 'PRESS'}),
                   ('paint.weight_paint', {'shift': True, 'type': 'LEFTMOUSE', 'value': 'PRESS'}),
                   ('paint.weight_gradient', {'shift': True, 'type': 'A', 'value': 'PRESS'}),
@@ -807,3 +806,10 @@ KEYMAP_ADD.setdefault('Image Editor Tool: Uv, Move', []).append(
 KEYMAP_ADD.setdefault('Object Mode', []).extend(
     ('blaya.quick_rotate', {'type': axis, 'value': 'PRESS', 'key_modifier': 'E'}, _p(axis=axis))
     for axis in ('X', 'Y', 'Z'))
+
+# ---------------------------------------------------------------------------- node editors
+# Alt + middle mouse pans in the Shader / Geometry Nodes / Compositor editors, like the 3D View and
+# Maya's Hypershade. It takes the place of Blender's "move backdrop image" on the same input.
+# (Alt + right mouse is left alone: Node Wrangler uses it for Lazy Connect.)
+KEYMAP_ADD.setdefault('Node Editor', []).append(
+    ('view2d.pan', {'type': 'MIDDLEMOUSE', 'value': 'PRESS', 'alt': True}, None))

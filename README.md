@@ -62,6 +62,7 @@ The Blender column is Blender 5.3's default keymap (left-click select). The Maya
 |---|---|---|---|---|
 | Orbit | Alt+LMB | MMB | Alt+LMB | Same as Maya |
 | Pan | Alt+MMB | Shift+MMB | Alt+MMB | Same as Maya |
+| Pan in node editors (Shader, Geometry Nodes, Compositor) | Alt+MMB, MMB | MMB | Alt+MMB | Alt+RMB is left to Node Wrangler; zoom with the wheel or Ctrl+MMB |
 | Dolly / zoom | Alt+RMB, Alt+wheel, wheel | Ctrl+MMB, wheel | Alt+RMB, wheel | Alt+wheel also zooms in Blaya |
 | Frame selected | F (all Quad View panes), Alt+F (this pane) | Numpad . | F | |
 | Frame everything | Shift+F, Home | Home, Shift+C | A | Shift+F also resets the 3D cursor (Blender's old Shift+C) |
@@ -192,7 +193,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 
 - The Clipping Tool cuts the base mesh (modifiers are re-evaluated afterwards) and cap faces have no UVs.
 - Pivot snapping uses the base meshes of visible objects, not their evaluated result.
-- Blaya changes hotkeys in the 3D View, the UV Editor and a few animation editors. Other editors keep Blender's defaults.
+- Blaya changes hotkeys in the 3D View, the UV Editor, the node editors (Alt+MMB pan) and a few animation editors. Other editors keep Blender's defaults.
 
 ## Why Blaya?
 
