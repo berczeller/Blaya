@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-23
+
 ### Added
 - Alt + middle mouse pans in the Shader, Geometry Nodes and Compositor editors, like in the 3D View (it replaces Blender's "move backdrop image" on that input; Alt + right mouse stays with Node Wrangler)
 
@@ -90,7 +92,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.5.1...HEAD
+[0.5.1]: https://github.com/berczeller/Blaya/releases/tag/0.5.1
 [0.5.0]: https://github.com/berczeller/Blaya/releases/tag/0.5.0
 [0.4.1]: https://github.com/berczeller/Blaya/releases/tag/0.4.1
 [0.4.0]: https://github.com/berczeller/Blaya/releases/tag/0.4.0
