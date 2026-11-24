@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-24
+
 ### Added
 - Smart Vert on 4 in Edit Mode: merge at last / mouse / center, merge and connect vertex paths, vertex bevel, and Slide Extend (Shift+Alt+4) with edge and face snapping and flatten
 - Save pie on Ctrl+S: open, save, save as, incremental save, previous / next file, most recent, revert, auto save, import / export, append / link, purge, reload libraries and clean out .blend, with an Image Editor variant
@@ -103,7 +105,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.5.1...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/berczeller/Blaya/releases/tag/0.6.0
 [0.5.1]: https://github.com/berczeller/Blaya/releases/tag/0.5.1
 [0.5.0]: https://github.com/berczeller/Blaya/releases/tag/0.5.0
 [0.4.1]: https://github.com/berczeller/Blaya/releases/tag/0.4.1
