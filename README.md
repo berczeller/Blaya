@@ -87,12 +87,12 @@ The Blender column is Blender 5.3's default keymap (left-click select). The Maya
 
 #### Quick rotation (hold E + X / Y / Z, object mode)
 
-Hold E (the Rotate tool key) and tap X, Y or Z. A box opens next to the cursor with the last angle used (90 the first time), already selected:
+Hold E (the Rotate tool key) and tap X, Y or Z. A box opens next to the cursor with 0 selected, so typing replaces it:
 
 | Key | Action |
 |---|---|
 | Digits, `-`, `.` or `,` | type the angle; `-` flips the sign |
-| Enter, click | apply (Enter right away repeats the last angle) |
+| Enter, click | apply (Enter on 0 just closes the box) |
 | Esc, right-click | cancel and restore |
 | X / Y / Z | switch the axis |
 | Backspace / Ctrl+Backspace | delete a character / clear |

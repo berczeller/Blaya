@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+- The quick rotation box (hold E + X / Y / Z) always opens at 0 instead of the last angle used. The applied angle shows in the redo panel and is reused by Repeat Last
+
 ### Fixed
 - Placing the pivot with several objects selected moved every origin by the active object's offset instead of onto the placed point, so the gizmo ended up somewhere in between. All selected origins now go to the placed point
 

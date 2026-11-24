@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Quick rotation by a typed angle: hold E and tap X / Y / Z in Object Mode.
 
-A small box opens at the mouse with the last angle used, already selected: type to replace it (or
-press Enter to repeat it). The selection turns live while typing, each object around its own origin,
-along the axis of the header's Transform Orientation. Enter or a click applies (one undo step),
-Esc or right-click cancels and restores everything.
+A small box opens at the mouse with 0 selected: type the angle to replace it. The selection turns live
+while typing, each object around its own origin, along the axis of the header's Transform Orientation.
+Enter or a click applies (one undo step), Esc or right-click cancels and restores everything.
 """
 
 import math
@@ -13,7 +12,7 @@ import math
 import blf
 import bpy
 import gpu
-from bpy.props import EnumProperty
+from bpy.props import EnumProperty, FloatProperty
 from mathutils import Matrix, Quaternion
 
 from . import ops_view
@@ -30,17 +29,11 @@ _NAV_TYPES = {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'WHEELINMOUSE', '
 MAX_CHARS = 10
 SNAP_DEGREE_EPS = 1e-5  # radians: Euler values this close to a whole degree are rounded to it
 
-_last_angle = [90.0]  # degrees, shared by all axes for the Blender session
 _running = None
 
 
 def in_quick_rotate():
     return _running is not None
-
-
-def format_angle(value):
-    text = f"{value:.6f}".rstrip("0").rstrip(".")
-    return "0" if text in {"-0", ""} else text
 
 
 def parse_angle(text):
@@ -175,6 +168,8 @@ class BLAYA_OT_quick_rotate(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     axis: EnumProperty(name="Axis", items=AXIS_ITEMS, default='Z')
+    angle: FloatProperty(name="Angle", description="Rotation in degrees (set by the box; used by redo and scripts)",
+                         default=0.0, soft_min=-360.0, soft_max=360.0)
 
     @classmethod
     def poll(cls, context):
@@ -229,7 +224,7 @@ class BLAYA_OT_quick_rotate(bpy.types.Operator):
             return self.cancel_box(context)
         self.preview(context)
         insert_auto_keys(context, [obj for obj, _state in self._saved])
-        _last_angle[0] = degrees
+        self.angle = degrees  # what the redo panel and Repeat Last use
         self.report({'INFO'}, f"Rotated {degrees:+g}° around {self.axis} ({orientation_label(context)})")
         self._finish(context, {'FINISHED'})
         return {'FINISHED'}
@@ -330,7 +325,7 @@ class BLAYA_OT_quick_rotate(bpy.types.Operator):
         self._anchor = (event.mouse_region_x, event.mouse_region_y)
         self._box_size = (220.0, 30.0)
         self._saved = [(obj, save_state(obj)) for obj in context.selected_editable_objects]
-        self._text = format_angle(_last_angle[0])
+        self._text = "0"  # always starts at 0; typing replaces it
         self._selected = True
         self._handle = bpy.types.SpaceView3D.draw_handler_add(self.draw_px, (), 'WINDOW', 'POST_PIXEL')
         context.window_manager.modal_handler_add(self)
@@ -341,8 +336,10 @@ class BLAYA_OT_quick_rotate(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def execute(self, context):
-        # Non-interactive (scripts, redo): rotate by the last angle without the box.
-        degrees = _last_angle[0]
+        # Non-interactive (redo panel, Repeat Last, scripts): rotate by `angle` without the box.
+        degrees = self.angle
+        if abs(degrees) < 1e-9:
+            return {'CANCELLED'}
         objs = list(context.selected_editable_objects)
         for obj in objs:
             rotate_object(context, obj, save_state(obj), self.axis, degrees)
