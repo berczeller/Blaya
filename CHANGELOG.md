@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+- Placing the pivot with several objects selected moved every origin by the active object's offset instead of onto the placed point, so the gizmo ended up somewhere in between. All selected origins now go to the placed point
+
 ## [0.5.1] - 2026-11-23
 
 ### Added

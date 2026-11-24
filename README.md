@@ -131,7 +131,7 @@ While editing the pivot, a move gizmo sits on it:
 - Click a highlighted point to put the pivot right on it. When points overlap on screen, the one closest to you wins.
 - V / C / F / G / X switch the snap target, the header shows the pivot's coordinates, and navigation keeps working.
 
-Only the origin moves: rotation, scale and the geometry stay where they are, so Mirror and other modifiers that use the origin pick up the exact position.
+Only the origin moves: rotation, scale and the geometry stay where they are, so Mirror and other modifiers that use the origin pick up the exact position. With several objects selected, all their origins go to the placed point, so the gizmo and group moves, rotations and scales use it.
 
 ### Clipping Tool (Shift+C, object mode)
 

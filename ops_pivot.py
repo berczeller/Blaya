@@ -10,7 +10,8 @@ Ctrl turns snapping off for the drag. Clicking a highlighted snap point also put
 V/C/F/G/X switch mode while editing; D, Enter, Esc or right-click finish. Navigation keeps working.
 
 Works on the selected objects' origins (via Blender's own "Origin to 3D Cursor", so children, curves
-and shared data behave as usual). Only the origin moves: rotation, scale and the geometry stay put.
+and shared data behave as usual). With several objects selected, all their origins go to the placed
+point. Only the origin moves: rotation, scale and the geometry stay put.
 Snap targets are the base meshes of all visible mesh objects, including the object being edited.
 """
 
@@ -335,8 +336,12 @@ def drag_target(context, region, rv3d, handle, start, axes, grab, mouse, snap, h
     return start + u * disp
 
 
-def set_origins(context, objects, delta):
-    """Move the origin of each object by `delta` (world), keeping geometry where it is."""
+def set_origins(context, objects, point):
+    """Put the origin of every object on `point` (world), keeping geometry where it is.
+
+    With several objects selected they all share the placed pivot, like Maya: the transform gizmo and
+    group moves, rotations and scales then use exactly that point.
+    """
     scene = context.scene
     view_layer = context.view_layer
     cursor = scene.cursor
@@ -349,7 +354,7 @@ def set_origins(context, objects, delta):
                 o.select_set(False)
             obj.select_set(True)
             view_layer.objects.active = obj
-            cursor.location = obj.matrix_world.translation + delta
+            cursor.location = point
             with context.temp_override(selected_editable_objects=[obj], active_object=obj, object=obj):
                 bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
     finally:
@@ -480,11 +485,11 @@ class BLAYA_OT_pivot_edit(bpy.types.Operator):
         self._status(context)
 
     def move_pivot(self, context, target):
-        objs = self._targets(context)
-        delta = Vector(target) - self._pivot
-        if not objs or delta.length < 1e-9:
+        target = Vector(target)
+        objs = [o for o in self._targets(context) if (o.matrix_world.translation - target).length > 1e-9]
+        if not objs:
             return False
-        set_origins(context, objs, delta)
+        set_origins(context, objs, target)
         self._placed = True
         self._rebuild(context)
         return True
