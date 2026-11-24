@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Smart Vert on 4 in Edit Mode: merge at last / mouse / center, merge and connect vertex paths, vertex bevel, and Slide Extend (Shift+Alt+4) with edge and face snapping and flatten
+- Save pie on Ctrl+S: open, save, save as, incremental save, previous / next file, most recent, revert, auto save, import / export, append / link, purge, reload libraries and clean out .blend, with an Image Editor variant
+- Auto Save: a copy of the open file every 30 seconds while it has changes and after undo, in its own folder, keeping the newest 20 per project
+
 ### Changed
 - The quick rotation box (hold E + X / Y / Z) always opens at 0 instead of the last angle used. The applied angle shows in the redo panel and is reused by Repeat Last
 

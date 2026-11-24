@@ -32,6 +32,8 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Smooth preview (1 / 2 / 3):** non-destructive, uses its own modifiers and never touches your mesh data or your Subdivision modifiers.
 - **Pivot editing (D + V / C / F / G / X):** a move gizmo on the pivot. Drag its center or one of its axes, snapping to vertices, edge midpoints, face centers or the grid, with every target highlighted.
 - **Clipping Tool (Shift+C):** draw a line in any view to cut the selected meshes, keep one side or split them, with capping, live preview, length/angle readout and in-tool undo.
+- **Smart Vert (4 in Edit Mode):** merge at the last vertex or the one under the mouse, at the center, along two paths, connect paths, and Slide Extend with edge / face snapping.
+- **Save pie (Ctrl+S):** save, incremental save, previous / next file, most recent, revert, auto save, import / export, append / link, purge and clean out, in one pie.
 - **UV Editor workflow:** QWER tools, smart click selection, 1 to 5 select modes, a UV marking menu, moving faces without stretching their neighbours, Shift+W straighten and D-key pivot placement.
 - **Selected UV islands in 3D:** while a UV Editor is open, the selected UV islands are tinted in the 3D View.
 - **Axis indicator presets** for Blender's navigation gizmo.
@@ -111,6 +113,7 @@ The selection turns live while you type, each object around its own origin, alon
 | Merge | Alt+M | M (menu) | - | |
 | Proportional editing | O, Alt+O (connected) | O | B (soft select) | |
 | Clipping Tool (object mode) | Shift+C | - | - | From Hammer and s&box, see below |
+| Smart Vert (edit mode) | 4 and Shift / Alt / Ctrl+Alt / Shift+Alt + 4 | - | - | See below |
 
 ### Pivot editing
 
@@ -165,6 +168,30 @@ The line snaps to vertices of the selected meshes or to the grid. In orthographi
 
 While a UV Editor is open in Edit Mode, the selected UV islands are tinted with a single colour in the 3D View (colour, opacity and on/off in the preferences). With UV Sync Selection on, an island counts as selected when one of its faces is.
 
+### Smart Vert (edit mode)
+
+| Keys | Action |
+|---|---|
+| 4 | Merge at the last selected vertex. After a box select: at the vertex nearest the mouse. One vertex: vertex bevel |
+| Shift+4 | Merge at the center |
+| Alt+4 | Merge paths: select 4 vertices in order, the path 1st-2nd merges onto the path 4th-3rd |
+| Ctrl+Alt+4 | Connect paths: same selection, connects the two paths |
+| Shift+Alt+4 | Slide Extend: the selected vertices slide along their edge towards the last one (past it extends) |
+
+In Face or Edge select mode, 4 and Shift+4 merge each face island or edge chain on its own. During Slide Extend: Ctrl snaps to the edge or face under the mouse (any object), Alt with Ctrl projects on the snapped edge, F flattens the end face when possible, click or Space confirms, Esc or right-click cancels. Alt + mouse still navigates.
+
+### Save pie (Ctrl+S)
+
+| Slot | Contents |
+|---|---|
+| Left / Right / Bottom | Open, Save, Save As (Alt: save a copy) |
+| Bottom-left / Bottom-right | New, Incremental Save (`name_009` -> `name_010`, otherwise `_001`; Alt: `name_01` branch) |
+| Top | Most Recent, All Recent, Open Current / Temp folder, Revert, Auto Save; export rows (OBJ, Plasticity, FBX, USD by default); Previous / Next .blend in the folder (Ctrl: include .blend1, Alt: keep the UI); Append, Link, external data, Purge (Alt: recursive, Shift: Blender's dialog), Reload libraries, Clean out .blend |
+
+**Auto Save** keeps a copy of the open file every 30 seconds while it has changes, and after each undo. Copies go to a "Blaya Autosave" folder in Blender's temporary directory (or a folder you pick) as `<date>_<file>-autosave.blend`, and only the newest 20 of each project are kept. It turns off when another file is opened; Alt-click the button to open a copy, Ctrl-click to open the folder.
+
+In the Image Editor, the top of the pie switches to image open, save, pack and clear.
+
 ### Other
 
 | Action | Blaya | Blender default | Maya default |
@@ -188,6 +215,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 | Clipping Tool | Starting keep mode, capping, vertex snap radius, key hints |
 | UV Editor | Smart selection, auto-detach on move, selected island tint in 3D (colour and opacity), key hints |
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |
+| Save Pie | Export formats shown, FBX scale for Unity, auto save interval, how many copies to keep, save on undo / redo panel, auto save folder |
 
 ## Known limitations
 

@@ -813,3 +813,19 @@ KEYMAP_ADD.setdefault('Object Mode', []).extend(
 # (Alt + right mouse is left alone: Node Wrangler uses it for Lazy Connect.)
 KEYMAP_ADD.setdefault('Node Editor', []).append(
     ('view2d.pan', {'type': 'MIDDLEMOUSE', 'value': 'PRESS', 'alt': True}, None))
+
+# ---------------------------------------------------------------------------- save pie
+# Ctrl+S opens Blaya's save pie (open / save / incremental / previous-next / auto save / export / purge)
+# in every editor, in place of Blender's plain save.
+KEYMAP_ADD.setdefault('Window', []).append(
+    ('wm.call_menu_pie', {'type': 'S', 'value': 'PRESS', 'ctrl': True}, _p(name='BLAYA_MT_save_pie')))
+
+# ---------------------------------------------------------------------------- smart vert
+# Smart Vert on 4 in Edit Mode (1 / 2 / 3 are Blaya's smooth preview).
+KEYMAP_ADD.setdefault('Mesh', []).extend([
+    ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS'}, _p(mode='MERGE', mergetype='LAST')),
+    ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'shift': True}, _p(mode='MERGE', mergetype='CENTER')),
+    ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'alt': True}, _p(mode='MERGE', mergetype='PATHS')),
+    ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'ctrl': True, 'alt': True}, _p(mode='CONNECT')),
+    ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'shift': True, 'alt': True}, _p(slideoverride=True)),
+])

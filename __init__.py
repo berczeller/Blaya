@@ -12,7 +12,8 @@ import time
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from . import keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_rotate, ops_uv, ops_view, ui_axis
+from . import (keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_rotate, ops_save, ops_smartvert, ops_uv,
+               ops_view, ui_axis)
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -161,6 +162,37 @@ class BlayaPreferences(bpy.types.AddonPreferences):
                     "and pressing 1 removes both",
         default=False,
     )
+    # Save pie (Ctrl+S) and Auto Save
+    autosave_interval: FloatProperty(
+        name="Auto Save Interval", description="Seconds between automatic copies while the file has changes",
+        default=30.0, min=10.0, soft_max=600.0, step=100, precision=0, subtype='TIME_ABSOLUTE', unit='TIME_ABSOLUTE',
+    )
+    autosave_limit: IntProperty(
+        name="Keep Autosaves", description="How many automatic copies to keep per project (the oldest go first)",
+        default=20, min=3, max=500,
+    )
+    autosave_undo: BoolProperty(
+        name="Save on Undo", description="Also take a copy right after each undo", default=True,
+    )
+    autosave_redo: BoolProperty(
+        name="Save on Redo Panel", description="Also take a copy when you start tweaking an operator in the redo panel",
+        default=False,
+    )
+    autosave_folder: StringProperty(
+        name="Auto Save Folder",
+        description="Where the copies go. Empty: a 'Blaya Autosave' folder in Blender's temporary directory",
+        default="", subtype='DIR_PATH',
+    )
+    save_pie_show_obj: BoolProperty(name="OBJ", default=True)
+    save_pie_show_plasticity: BoolProperty(name="Plasticity", description="OBJ with Z up, Y forward", default=True)
+    save_pie_show_fbx: BoolProperty(name="FBX", default=True)
+    save_pie_show_usd: BoolProperty(name="USD", default=True)
+    save_pie_show_gltf: BoolProperty(name="glTF", default=False)
+    save_pie_show_stl: BoolProperty(name="STL", default=False)
+    fbx_export_apply_scale_all: BoolProperty(
+        name="FBX Apply Scale All", description="Export FBX with Apply Scalings set to 'FBX All' (for Unity)",
+        default=False,
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -218,6 +250,18 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col = layout.column()
         col.label(text="Smooth Preview (1 / 2 / 3)", icon='MOD_SUBSURF')
         col.prop(self, "smooth_preview_shade_smooth")
+        layout.separator()
+        col = layout.column()
+        col.label(text="Save Pie (Ctrl+S)", icon='FILE_TICK')
+        row = col.row(heading="Export Formats")
+        for name in ("obj", "plasticity", "fbx", "usd", "gltf", "stl"):
+            row.prop(self, f"save_pie_show_{name}", toggle=True)
+        col.prop(self, "fbx_export_apply_scale_all")
+        col.prop(self, "autosave_interval")
+        col.prop(self, "autosave_limit")
+        col.prop(self, "autosave_undo")
+        col.prop(self, "autosave_redo")
+        col.prop(self, "autosave_folder")
 
 
 class BLAYA_OT_activate_keymap(bpy.types.Operator):
@@ -231,7 +275,7 @@ class BLAYA_OT_activate_keymap(bpy.types.Operator):
         return {'FINISHED'}
 
 
-_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_rotate, ops_uv, menus, ui_axis)
+_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_rotate, ops_save, ops_smartvert, ops_uv, menus, ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 
