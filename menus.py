@@ -62,6 +62,12 @@ class BLAYA_MT_marking_menu(Menu):
         row.menu("BLAYA_MT_modes", text="", icon='SCULPTMODE_HLT')
         row.menu("BLAYA_MT_pivot", text="", icon='SNAP_ON')
 
+        if context.mode == 'OBJECT':
+            # Export prep: greyed out until objects are selected (the operators' poll decides).
+            row = col.box().row(align=True)
+            row.operator("blaya.set_empty", text="Set Empty", icon='EMPTY_AXIS')
+            row.operator("blaya.reset_position", text="Reset Position", icon='LOOP_BACK')
+
 
 class BLAYA_MT_view_pie(Menu):
     bl_idname = "BLAYA_MT_view_pie"

@@ -12,8 +12,8 @@ import time
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from . import (keymap_install, menus, ops_clip, ops_mesh, ops_pivot, ops_rotate, ops_save, ops_smartvert, ops_uv,
-               ops_view, ui_axis)
+from . import (keymap_install, menus, ops_clip, ops_empty, ops_mesh, ops_pivot, ops_rotate, ops_save, ops_smartvert,
+               ops_uv, ops_view, ui_axis)
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -275,7 +275,8 @@ class BLAYA_OT_activate_keymap(bpy.types.Operator):
         return {'FINISHED'}
 
 
-_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_rotate, ops_save, ops_smartvert, ops_uv, menus, ui_axis)
+_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_empty, ops_rotate, ops_save, ops_smartvert, ops_uv, menus,
+            ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 

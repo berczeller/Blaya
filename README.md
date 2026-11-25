@@ -27,6 +27,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **QWER tools:** select, move, rotate, scale.
 - **Quick rotation (hold E + X / Y / Z):** type an angle in a small box at the mouse and the selected objects turn by it, live, each around its own origin.
 - **Marking menu (RMB):** component modes, object mode, isolate, shading, selection, create, freeze/reset transforms and pivot tools.
+- **Set Empty / Reset Position (marking menu, object mode):** put the selected objects under an Empty at the world center with neutral transforms, ready for FBX export, and put them back after moving them around.
 - **Space bar:** tap toggles perspective/orthographic, hold opens a view pie (ortho views, Quad View, splits, camera) with a label showing the view name and axis.
 - **Quad View, Maya style:** leaving Quad View maximizes the pane under the mouse.
 - **Smooth preview (1 / 2 / 3):** non-destructive, uses its own modifiers and never touches your mesh data or your Subdivision modifiers.
@@ -167,6 +168,13 @@ The line snaps to vertices of the selected meshes or to the grid. In orthographi
 | Edit the pivot with snapping | D+V / D+C / D+F / D+G / D+X | - | Hold D (+ V / C / X) | Places the 2D cursor and uses it as pivot, key hints in the bottom-right corner |
 
 While a UV Editor is open in Edit Mode, the selected UV islands are tinted with a single colour in the 3D View (colour, opacity and on/off in the preferences). With UV Sync Selection on, an island counts as selected when one of its faces is.
+
+### Set Empty and Reset Position (marking menu, object mode)
+
+Two buttons at the bottom of the right-click marking menu's toolbox, under Smooth. They are greyed out until there is something to work on.
+
+- **Set Empty:** creates a Plain Axes Empty at the world center and puts the selected objects inside it. Each object is moved so its own pivot sits on the world center, then its location, rotation and scale are applied, so it ends at 0 / 0 / 1 with its shape unchanged around the pivot. The Empty takes the name of the first selected object in the Outliner without its `_LOD<n>` suffix: `Chair_A_LOD0` ... `Chair_A_LOD3` give `Chair_A`. If an Empty with that name already exists, it is used (and moved to the world center) instead of making a `.001` copy; if another kind of object has the name, the new Empty gets Blender's `.001` suffix and a warning says why. Objects that share mesh data with others get their own copy first. Running it again on the same group reuses its Empty.
+- **Reset Position:** after moving objects or their Empty around (to test modules side by side, say), puts the selected objects' groups back: every object at 0 / 0 / 1 inside its Empty and the Empty on the world center, even if an object was taken out of it.
 
 ### Smart Vert (edit mode)
 

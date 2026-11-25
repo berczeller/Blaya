@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Set Empty in the marking menu (Object Mode): puts the selected objects under a Plain Axes Empty at the world center named after them without the _LOD suffix (an existing Empty with that name is reused, so no .001 copy), each with its pivot on the center and its transforms applied, ready for FBX export
+- Reset Position next to it: puts a Set Empty group back in that neutral state after its objects or Empty were moved
+
 ## [0.6.0] - 2026-11-24
 
 ### Added
