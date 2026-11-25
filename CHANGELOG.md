@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-25
+
 ### Added
 - Set Empty in the marking menu (Object Mode): puts the selected objects under a Plain Axes Empty at the world center named after them without the _LOD suffix (an existing Empty with that name is reused, so no .001 copy), each with its pivot on the center and its transforms applied, ready for FBX export
 - Reset Position next to it: puts a Set Empty group back in that neutral state after its objects or Empty were moved
@@ -109,7 +111,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/berczeller/Blaya/releases/tag/0.7.0
 [0.6.0]: https://github.com/berczeller/Blaya/releases/tag/0.6.0
 [0.5.1]: https://github.com/berczeller/Blaya/releases/tag/0.5.1
 [0.5.0]: https://github.com/berczeller/Blaya/releases/tag/0.5.0
