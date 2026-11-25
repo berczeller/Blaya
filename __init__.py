@@ -189,6 +189,12 @@ class BlayaPreferences(bpy.types.AddonPreferences):
     save_pie_show_usd: BoolProperty(name="USD", default=True)
     save_pie_show_gltf: BoolProperty(name="glTF", default=False)
     save_pie_show_stl: BoolProperty(name="STL", default=False)
+    group_hide_children: BoolProperty(
+        name="Groups Hide Like Collections",
+        description="Hiding or showing a Set Empty group's Empty also hides or shows the objects inside it, "
+                    "like a collection",
+        default=True,
+    )
     fbx_export_apply_scale_all: BoolProperty(
         name="FBX Apply Scale All", description="Export FBX with Apply Scalings set to 'FBX All' (for Unity)",
         default=False,
@@ -250,6 +256,10 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col = layout.column()
         col.label(text="Smooth Preview (1 / 2 / 3)", icon='MOD_SUBSURF')
         col.prop(self, "smooth_preview_shade_smooth")
+        layout.separator()
+        col = layout.column()
+        col.label(text="Set Empty Groups", icon='EMPTY_AXIS')
+        col.prop(self, "group_hide_children")
         layout.separator()
         col = layout.column()
         col.label(text="Save Pie (Ctrl+S)", icon='FILE_TICK')

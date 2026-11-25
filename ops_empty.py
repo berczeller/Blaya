@@ -9,6 +9,8 @@ object in Outliner order without its _LOD<n> suffix (Chair_A_LOD0 ... Chair_A_LO
 
 Reset Position puts objects moved around later (testing modules side by side) back into that state:
 every object at 0 / 0 / 1 under its Empty, and the Empty back on the world center.
+
+Hiding or showing a group's Empty hides or shows its children too, like a collection.
 """
 
 import re
@@ -109,6 +111,7 @@ class BLAYA_OT_set_empty(bpy.types.Operator):
             obj.matrix_parent_inverse = Matrix.Identity(4)
             reset_transform(obj)
             obj[GROUP_KEY] = empty
+        invalidate_roots()
         # Blaya Empties left without children by this move (the group changed Empty) are removed.
         for old in previous:
             if old is not empty and old.name in bpy.data.objects and old.get(ROOT_KEY) and not old.children:
@@ -196,14 +199,110 @@ class BLAYA_OT_reset_position(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# --------------------------------------------------------------------------- hide like a collection
+# Hiding a Set Empty group's Empty (H, Shift+H, the Outliner eye...) hides its children too, and showing it
+# shows them again, like a collection. Children hidden on their own before stay hidden when the group is
+# shown, and selected children are never hidden by the Empty (so Shift+H on a selected LOD still works).
+
+HIDDEN_BEFORE_KEY = "blaya_hidden_before"  # on the Empty: children that were already hidden when it was hidden
+_hide_state = {}   # Empty name -> hidden (as last seen)
+_syncing = [False]
+
+
+def _prefs():
+    try:
+        return bpy.context.preferences.addons[__package__].preferences
+    except (KeyError, AttributeError):
+        return None
+
+
+_root_cache = {"count": -1, "names": []}
+
+
+def invalidate_roots():
+    _root_cache["count"] = -1
+
+
+def _roots():
+    # This runs on every scene update (every frame of a drag), so the scan is cached and only redone when
+    # the number of objects changes or Set Empty marks a new group.
+    objects = bpy.data.objects
+    if _root_cache["count"] != len(objects):
+        _root_cache["names"] = [o.name for o in objects if o.type == 'EMPTY' and o.get(ROOT_KEY)]
+        _root_cache["count"] = len(objects)
+    found = [objects.get(n) for n in _root_cache["names"]]
+    if any(o is None or not o.get(ROOT_KEY) for o in found):  # renamed or removed: rescan next time
+        invalidate_roots()
+    return [o for o in found if o is not None and o.get(ROOT_KEY)]
+
+
+def _hidden(obj, view_layer):
+    try:
+        return obj.hide_get(view_layer=view_layer)
+    except RuntimeError:  # not in this view layer
+        return None
+
+
+def sync_group_visibility(view_layer):
+    """Make the children of Set Empty groups follow their Empty when its visibility changed."""
+    prefs = _prefs()
+    if prefs is None or not prefs.group_hide_children or _syncing[0]:
+        return
+    _syncing[0] = True
+    try:
+        for empty in _roots():
+            hidden = _hidden(empty, view_layer)
+            if hidden is None:
+                continue
+            was = _hide_state.get(empty.name)
+            _hide_state[empty.name] = hidden
+            if was is None or was == hidden:
+                continue  # first sight (file load, new group) or no change: leave the children alone
+            kids = [c for c in empty.children_recursive if _hidden(c, view_layer) is not None]
+            if hidden:
+                empty[HIDDEN_BEFORE_KEY] = [c.name for c in kids if _hidden(c, view_layer)]
+                for c in kids:
+                    if not c.select_get(view_layer=view_layer):
+                        c.hide_set(True, view_layer=view_layer)
+            else:
+                keep = set(empty.get(HIDDEN_BEFORE_KEY, []))
+                for c in kids:
+                    if c.name not in keep:
+                        c.hide_set(False, view_layer=view_layer)
+                if HIDDEN_BEFORE_KEY in empty:
+                    del empty[HIDDEN_BEFORE_KEY]
+    finally:
+        _syncing[0] = False
+
+
+@bpy.app.handlers.persistent
+def _on_depsgraph(scene, depsgraph):
+    if not _syncing[0]:
+        sync_group_visibility(depsgraph.view_layer)
+
+
+@bpy.app.handlers.persistent
+def _on_load_post(*_args):
+    _hide_state.clear()  # the next update only records the loaded file's state
+
+
 _classes = (BLAYA_OT_set_empty, BLAYA_OT_reset_position)
 
 
 def register():
     for cls in _classes:
         bpy.utils.register_class(cls)
+    for handlers, fn in ((bpy.app.handlers.depsgraph_update_post, _on_depsgraph),
+                         (bpy.app.handlers.load_post, _on_load_post)):
+        if fn not in handlers:
+            handlers.append(fn)
 
 
 def unregister():
+    for handlers, fn in ((bpy.app.handlers.depsgraph_update_post, _on_depsgraph),
+                         (bpy.app.handlers.load_post, _on_load_post)):
+        if fn in handlers:
+            handlers.remove(fn)
+    _hide_state.clear()
     for cls in reversed(_classes):
         bpy.utils.unregister_class(cls)

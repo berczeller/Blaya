@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Set Empty groups hide and show like collections: hiding a group's Empty (H, Shift+H, the Outliner eye) hides its objects, showing it brings them back, except objects hidden on their own. Can be turned off in the preferences
+
 ## [0.7.0] - 2026-11-25
 
 ### Added

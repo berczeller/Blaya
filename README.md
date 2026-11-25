@@ -174,6 +174,7 @@ While a UV Editor is open in Edit Mode, the selected UV islands are tinted with 
 Two buttons at the bottom of the right-click marking menu's toolbox, under Smooth. They are greyed out until there is something to work on.
 
 - **Set Empty:** creates a Plain Axes Empty at the world center and puts the selected objects inside it. Each object is moved so its own pivot sits on the world center, then its location, rotation and scale are applied, so it ends at 0 / 0 / 1 with its shape unchanged around the pivot. The Empty takes the name of the first selected object in the Outliner without its `_LOD<n>` suffix: `Chair_A_LOD0` ... `Chair_A_LOD3` give `Chair_A`. If an Empty with that name already exists, it is used (and moved to the world center) instead of making a `.001` copy; if another kind of object has the name, the new Empty gets Blender's `.001` suffix and a warning says why. Objects that share mesh data with others get their own copy first. Running it again on the same group reuses its Empty.
+- **Hide like a collection:** hiding a group's Empty (H, Shift+H, the Outliner eye) hides the objects inside it, and showing it shows them again. Objects you hid on their own stay hidden, and a selected object is never hidden by its Empty. Only Set Empty groups do this; other Empties keep Blender's behaviour. Turn it off in the preferences.
 - **Reset Position:** after moving objects or their Empty around (to test modules side by side, say), puts the selected objects' groups back: every object at 0 / 0 / 1 inside its Empty and the Empty on the world center, even if an object was taken out of it.
 
 ### Smart Vert (edit mode)
@@ -223,6 +224,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 | Clipping Tool | Starting keep mode, capping, vertex snap radius, key hints |
 | UV Editor | Smart selection, auto-detach on move, selected island tint in 3D (colour and opacity), key hints |
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |
+| Set Empty Groups | Groups hide and show their objects like a collection |
 | Save Pie | Export formats shown, FBX scale for Unity, auto save interval, how many copies to keep, save on undo / redo panel, auto save folder |
 
 ## Known limitations
