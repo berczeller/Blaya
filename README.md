@@ -36,6 +36,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Clipping Tool (Shift+C):** draw a line in any view to cut the selected meshes, keep one side or split them, with capping, live preview, length/angle readout and in-tool undo.
 - **Smart Vert (4 in Edit Mode):** merge at the last vertex or the one under the mouse, at the center, along two paths, connect paths, and Slide Extend with edge / face snapping.
 - **Save pie (Ctrl+S):** save, incremental save, previous / next file, most recent, revert, auto save, import / export, append / link, purge and clean out, in one pie.
+- **Unity Export (Ctrl+S, sidebar):** one FBX per Empty, mesh or collection in an export list, with Unity's axes, rotation 0 and scale 1, each moved to the origin for the export and checked for common problems first.
 - **UV Editor workflow:** QWER tools, smart click selection, 1 to 5 select modes, a UV marking menu, moving faces without stretching their neighbours, Shift+W straighten and D-key pivot placement.
 - **UV Island mode:** a component mode in the marking menu: in the 3D View the UV island under the mouse lights up and a click selects it whole.
 - **Axis indicator presets** for Blender's navigation gizmo.
@@ -217,6 +218,49 @@ In Face or Edge select mode, 4 and Shift+4 merge each face island or edge chain 
 
 In the Image Editor, the top of the pie switches to image open, save, pack and clear.
 
+### Unity Export (Ctrl+S top-right, sidebar Blaya tab)
+
+Exports each root in an export list to its own FBX, named after the root, set up for Unity: Forward -Z, Up Y, Apply Scalings FBX All and Apply Transform, so objects arrive with rotation 0,0,0 and scale 1, and a model facing -Y in Blender faces +Z (the blue arrow) in Unity. Animation, cameras and lights are left out. Static props only: a root with a rig or animation is skipped.
+
+| Root | What its FBX holds |
+|---|---|
+| Empty (a Set Empty group, say) | Everything parented under it, not the Empty itself, so the LODs sit at the top of the file and Unity builds the LOD Group from their `_LOD0`, `_LOD1` names |
+| Mesh | The mesh itself and its children, for meshes kept as their own file (`_COL`, `_shadowproxy`, `_guide`) |
+| Collection | Its objects |
+
+- **Pie:** Export All, Export Selected (the roots of the selected objects), Add (the roots of the selected objects: their Set Empty group or the top of their parent chain; a selected Empty is added itself; with nothing selected, the active collection), a folder preset menu, and Manage, which opens the full panel.
+- **Panel** (sidebar, Blaya tab): the list, the folder for new roots and its presets, Move to 0,0,0, Merge per LOD, and Export All / Active / Selected.
+- **Move to 0,0,0** (on by default): each root is exported as if it stood at the world origin and is put back afterwards. Only its position moves.
+- **Merge per LOD** (off by default): joins the meshes of each LOD level into one (`Chair_LOD0_seat` + `Chair_LOD0_legs` give `Chair_LOD0`); parts without an LOD suffix join into one named after the root. Objects with children, like a door on its hinge, stay separate.
+- **What stays out:** objects with Disable in Renders on (the camera icon, for helpers and reference meshes), cameras, lights and anything that isn't a mesh. Empties between the root and a mesh are kept, so moving parts keep their pivots and hierarchy. Hidden objects are exported.
+- **Each root remembers its first export:** the folder, the scale settings and the object names. Later exports go to the same file at the same size even if the preferences change, and a lock icon shows in the list. Forget (the unlock button) clears it.
+- **Nothing is renamed or changed for you.** Smooth Preview is left out of the FBX, Edit Mode and UV Island mode come back after the export, and a read-only FBX (not checked out) is reported instead of overwritten.
+
+Before writing, each root is checked and a popup lists what may come out wrong in Unity:
+
+- lowercase `_lod` (Unity builds no LOD Group from it)
+- `.001` suffixes
+- names that changed since the last export (Unity loses the meshes it referenced)
+- rotation or scale not applied (Ctrl+A), zero or negative scale
+- an Empty root with rotation or scale
+- material names with `.001` or shared with an object
+- material slots that differ from LOD0
+- scene units other than metres at Unit Scale 1
+
+**In Unity**, Blender can't set the import settings. For a static prop, check:
+
+| Setting | For a static prop |
+|---|---|
+| Scale Factor / Convert Units | A one-metre object measures one unit |
+| Rig > Animation Type | None |
+| Import Animation | Off |
+| Normals | Import |
+| Tangents | To match the normal maps (Calculate Mikktspace for maps baked in MikkTSpace) |
+| Generate Colliders | Off when the prefab has its own colliders |
+| Materials | Each slot remapped to the right material |
+
+Then place the model in a test scene: right size, facing +Z, pivots in place, LOD Group present, no extra objects or Animator.
+
 ### Other
 
 | Action | Blaya | Blender default | Maya default |
@@ -242,6 +286,7 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |
 | Empties | Empties hide and show their objects like a collection |
 | Save Pie | Export formats shown, FBX scale for Unity, auto save interval, how many copies to keep, save on undo / redo panel, auto save folder |
+| Unity Export | Apply Scalings and Apply Transform for roots exported for the first time, triangulate, tangents, folder presets |
 
 ## Known limitations
 

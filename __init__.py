@@ -10,10 +10,11 @@ and menus that the keymap points at.
 import time
 
 import bpy
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
+from bpy.props import (BoolProperty, CollectionProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty,
+                       StringProperty)
 
-from . import (keymap_install, menus, ops_clip, ops_empty, ops_mesh, ops_pivot, ops_rotate, ops_save, ops_smartvert,
-               ops_uv, ops_uvisland, ops_view, ui_axis)
+from . import (keymap_install, menus, ops_clip, ops_empty, ops_export, ops_mesh, ops_pivot, ops_rotate, ops_save,
+               ops_smartvert, ops_uv, ops_uvisland, ops_view, ui_axis)
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -205,6 +206,31 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         name="FBX Apply Scale All", description="Export FBX with Apply Scalings set to 'FBX All' (for Unity)",
         default=False,
     )
+    unity_apply_scale: EnumProperty(
+        name="Apply Scalings",
+        description="For roots exported for the first time. Each root keeps the setting of its first export, "
+                    "so its size in Unity never changes",
+        items=ops_export.SCALE_ITEMS, default='FBX_SCALE_ALL',
+    )
+    unity_apply_transform: BoolProperty(
+        name="Apply Transform",
+        description="For roots exported for the first time: bake the Z-up to Y-up conversion into the mesh, "
+                    "so objects arrive in Unity with rotation 0,0,0. Each root keeps the setting of its first "
+                    "export",
+        default=True,
+    )
+    unity_triangulate: BoolProperty(
+        name="Triangulate",
+        description="Triangulate on export. Off keeps the triangulation of the source (a Triangulate modifier "
+                    "is applied either way), so it matches what the textures were baked on",
+        default=False,
+    )
+    unity_tangents: BoolProperty(
+        name="Tangents",
+        description="Write tangents to the FBX. Off lets Unity calculate them (Calculate Mikktspace)",
+        default=False,
+    )
+    unity_presets: CollectionProperty(type=ops_export.BlayaExportPreset)
 
     def draw(self, context):
         layout = self.layout
@@ -279,6 +305,20 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col.prop(self, "autosave_undo")
         col.prop(self, "autosave_redo")
         col.prop(self, "autosave_folder")
+        layout.separator()
+        col = layout.column()
+        col.label(text="Unity Export (Ctrl+S, sidebar Blaya tab)", icon='EXPORT')
+        col.prop(self, "unity_apply_scale")
+        col.prop(self, "unity_apply_transform")
+        col.prop(self, "unity_triangulate")
+        col.prop(self, "unity_tangents")
+        col.label(text="Folder Presets")
+        for i, p in enumerate(self.unity_presets):
+            row = col.row(align=True)
+            row.prop(p, "name", text="")
+            row.prop(p, "path", text="")
+            row.operator("blaya.export_preset_remove", text="", icon='X').index = i
+        col.operator("blaya.export_preset_add", text="Save the Scene's Folder as a Preset", icon='ADD')
 
 
 class BLAYA_OT_activate_keymap(bpy.types.Operator):
@@ -293,8 +333,8 @@ class BLAYA_OT_activate_keymap(bpy.types.Operator):
 
 
 _modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_empty, ops_rotate, ops_save, ops_smartvert, ops_uv,
-            ops_uvisland, menus, ui_axis)
-_classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
+            ops_uvisland, ops_export, menus, ui_axis)
+_classes = (ops_export.BlayaExportPreset, BlayaPreferences, BLAYA_OT_activate_keymap)
 
 
 KEYMAP_WAIT = 5.0  # seconds to wait for the Blaya keyconfig to become active after loading

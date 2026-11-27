@@ -271,6 +271,8 @@ class BLAYA_OT_empty_to_collection(bpy.types.Operator):
                 if GROUP_KEY in obj:
                     del obj[GROUP_KEY]
             _hide_state.pop(name, None)
+            from . import ops_export
+            ops_export.replace_root(empty, coll)  # an export root stays one, with its folder and settings
             bpy.data.objects.remove(empty)
             if coll.name != name:
                 renamed.append(coll.name)

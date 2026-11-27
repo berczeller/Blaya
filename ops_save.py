@@ -632,7 +632,8 @@ class BLAYA_MT_save_pie(Menu):
         else:
             self.draw_top(pie, context)                                               # N
             pie.separator()                                                           # NW
-            pie.separator()                                                           # NE
+            from . import ops_export
+            ops_export.draw_pie_box(pie, context)                                     # NE
         pie.operator("blaya.file_new", text="New", icon='FILE')                       # SW
         pie.operator("blaya.file_save_incremental", text="Incremental Save", icon='DUPLICATE')  # SE
 

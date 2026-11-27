@@ -9,6 +9,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - Empty to Collection in the marking menu, next to Set Empty: turns the selected Empties into collections with the same names, with their objects inside and in the same place
 - UV Island mode in the marking menu, next to Vertex, Edge and Face, from Object or Edit Mode: in the 3D View the UV island under the mouse is highlighted, a click selects it whole (Shift toggles, Ctrl removes, Ctrl+Shift adds, a click on empty space clears), and box or lasso selections are rounded to whole islands
 
+- Unity Export in the Ctrl+S pie (top-right) and the sidebar's Blaya tab: exports each root of an export list (an Empty, a mesh or a collection) to its own FBX for Unity, with Forward -Z, Up Y, rotation 0 and scale 1. Each root can be moved to the origin for the export and its LOD parts merged per level; moving parts keep their hinges. Each root remembers the folder, scale settings and object names of its first export, and a popup reports lowercase _lod, .001 names, renamed objects, unapplied transforms, material problems and scene units. Smooth Preview is left out, and the scene, Edit Mode and UV Island mode are put back afterwards
+- Empty to Collection keeps an Empty's place in the export list, as a collection
+
 ### Changed
 - Selected UV islands are only tinted in UV Island mode, and each selected island is outlined, so the whole mesh no longer turns blue when a few faces are selected
 - Isolate moved from the marking menu's top-left slot to the first button of the toolbox below it, to make room for UV Island
