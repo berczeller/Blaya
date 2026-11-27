@@ -20,7 +20,7 @@ class BLAYA_MT_marking_menu(Menu):
         pie.operator("blaya.component_mode", text="Multi", icon='EDITMODE_HLT').mode = 'MULTI'
         pie.operator("object.shade_smooth", text="Smooth", icon='MOD_SMOOTH')
         pie.operator("blaya.component_mode", text="Edge", icon='EDGESEL').mode = 'EDGE'
-        pie.operator("view3d.localview", text="Isolate", icon='BORDERMOVE')
+        pie.operator("blaya.uv_island_mode", text="UV Island", icon='UV_ISLANDSEL')
         pie.operator("object.mode_set", text="Object", icon='OBJECT_DATA').mode = 'OBJECT'
         pie.operator("object.shade_flat", text="Flat", icon='MOD_WIREFRAME')
         pie.operator("blaya.component_mode", text="Face", icon='FACESEL').mode = 'FACE'
@@ -44,6 +44,7 @@ class BLAYA_MT_marking_menu(Menu):
             row.operator("mesh.select_less", text="", icon='REMOVE')
 
         row = col.box().row(align=True)
+        row.operator("view3d.localview", text="", icon='BORDERMOVE')
         row.menu("BLAYA_MT_add", text="", icon='ADD')
         row.operator("screen.screen_full_area", text="", icon='FULLSCREEN_ENTER')
         row.operator("blaya.subdivide_all", text="", icon='MOD_MULTIRES').reverse = False
@@ -67,6 +68,7 @@ class BLAYA_MT_marking_menu(Menu):
             row = col.box().row(align=True)
             row.operator("blaya.set_empty", text="Set Empty", icon='EMPTY_AXIS')
             row.operator("blaya.reset_position", text="Reset Position", icon='LOOP_BACK')
+            row.operator("blaya.empty_to_collection", text="To Collection", icon='OUTLINER_COLLECTION')
 
 
 class BLAYA_MT_view_pie(Menu):

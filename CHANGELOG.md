@@ -5,7 +5,14 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Added
-- Set Empty groups hide and show like collections: hiding a group's Empty (H, Shift+H, the Outliner eye) hides its objects, showing it brings them back, except objects hidden on their own. Can be turned off in the preferences
+- Empties hide and show like collections, however they were made: hiding an Empty (H, the Outliner eye) hides everything parented under it, nested Empties included, and showing it brings them back, except objects hidden on their own. Shift+H keeps the selected objects visible. Can be turned off in the preferences
+- Empty to Collection in the marking menu, next to Set Empty: turns the selected Empties into collections with the same names, with their objects inside and in the same place
+- UV Island mode in the marking menu, next to Vertex, Edge and Face, from Object or Edit Mode: in the 3D View the UV island under the mouse is highlighted, a click selects it whole (Shift toggles, Ctrl removes, Ctrl+Shift adds, a click on empty space clears), and box or lasso selections are rounded to whole islands
+
+### Changed
+- Selected UV islands are only tinted in UV Island mode, and each selected island is outlined, so the whole mesh no longer turns blue when a few faces are selected
+- Isolate moved from the marking menu's top-left slot to the first button of the toolbox below it, to make room for UV Island
+- Reset Position also works on objects parented to a Set Empty group afterwards (a new part or LOD): they join the group with their rotation and scale kept
 
 ## [0.7.0] - 2026-11-25
 

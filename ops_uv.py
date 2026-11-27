@@ -1,10 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Tom Berczeller
 # SPDX-License-Identifier: GPL-3.0-or-later
 """UV Editor workflow: smart click selection, select modes 1-4, auto-detach move, straighten,
-pivot (2D cursor) editing with snapping, and a tint on the selected UV islands in the 3D View.
+and pivot (2D cursor) editing with snapping. UV Island mode in the 3D View lives in ops_uvisland.py.
 """
-
-import time
 
 import bmesh
 import bpy
@@ -729,165 +727,7 @@ def draw_hints_right(context, region, title, rows):
     blf.disable(font, blf.SHADOW)
 
 
-# --------------------------------------------------------------------------- selected UV islands in 3D
-
-_island_cache = {}  # obj name -> dict with the island triangles and the current selection batch
-_dirty = set()      # geometry or UVs changed: islands are rebuilt once edits settle
-_sel_dirty = set()  # selection changed: only the tinted triangles are rebuilt, right away
-_overlay_handle = None
-
-# Depth bias in NDC units (about 34 steps of a 24-bit depth buffer at any distance) that keeps
-# the tint in front of the mesh's own faces. The old offset along the face normals was 0.2 mm
-# on a 2 m object, while one depth step is about 1 cm at 40 m with the default clip start,
-# so the tint z-fought with the mesh as soon as the camera moved back.
-DEPTH_BIAS = 4e-6
-
-
-def uv_islands(bm):
-    """Lists of faces per UV island (hidden faces ignored)."""
-    from bpy_extras.bmesh_utils import bmesh_linked_uv_islands
-    uv = bm.loops.layers.uv.active
-    if uv is None:
-        return []
-    islands = bmesh_linked_uv_islands(bm, uv)
-    return [[f for f in isl if not f.hide] for isl in islands if any(not f.hide for f in isl)]
-
-
-MAX_ISLAND_FACES = 200_000
-
-
-def _build_islands(obj):
-    """Island face indices and per-island triangles in object space for one edit mesh."""
-    bm = bmesh.from_edit_mesh(obj.data)
-    entry = {"mesh": obj.data.name, "faces": len(bm.faces), "islands": None,
-             "sel": None, "sync": None, "batch": None}
-    if len(bm.faces) > MAX_ISLAND_FACES:
-        return entry
-    islands = uv_islands(bm)
-    if not islands:
-        return entry
-    bm.verts.index_update()
-    bm.faces.index_update()
-    face_island = np.full(len(bm.faces), -1, np.int32)
-    for i, isl in enumerate(islands):
-        face_island[[f.index for f in isl]] = i
-    tris = bm.calc_loop_triangles()
-    if not tris:
-        return entry
-    tri_vert = np.array([[l.vert.index for l in t] for t in tris], np.int32)
-    tri_face = np.array([t[0].face.index for t in tris], np.int32)
-    keep = face_island[tri_face] >= 0
-    co = np.array([v.co for v in bm.verts], np.float32)
-    entry["islands"] = [[f.index for f in isl] for isl in islands]
-    entry["tri_pos"] = co[tri_vert[keep]]
-    entry["tri_island"] = face_island[tri_face[keep]]
-    return entry
-
-
-def _selected_islands(bm, islands, sync):
-    """Indices of the islands that hold a selected face (sync) or any selected UV (no sync)."""
-    uv = bm.loops.layers.uv.active
-    faces = bm.faces
-    faces.ensure_lookup_table()
-    out = set()
-    for i, isl in enumerate(islands):
-        for fi in isl:
-            f = faces[fi]
-            if sync:
-                # Mesh vertices and edges are shared across seams, so only faces say which island.
-                hit = f.select
-            else:
-                # Without sync the UV Editor only shows faces selected in the mesh.
-                hit = f.select and (getattr(f, "uv_select", False)
-                                    or any(_loop_uv_selected(l, uv) for l in f.loops))
-            if hit:
-                out.add(i)
-                break
-    return frozenset(out)
-
-
-def _selection_batch(entry):
-    sel = entry["sel"]
-    if not sel:
-        return None
-    mask = np.isin(entry["tri_island"], np.fromiter(sel, np.int32))
-    if not mask.any():
-        return None
-    pos = entry["tri_pos"][mask].reshape(-1, 3)
-    return batch_for_shader(gpu.shader.from_builtin('UNIFORM_COLOR'), 'TRIS', {"pos": pos})
-
-
-def _island_batch(obj, sync, settled):
-    name = obj.name
-    entry = _island_cache.get(name)
-    if entry is None or entry["mesh"] != obj.data.name or (name in _dirty and settled):
-        entry = _island_cache[name] = _build_islands(obj)
-        _dirty.discard(name)
-        _sel_dirty.add(name)
-    if entry["islands"] is None:
-        return None
-    # While edits keep coming (dragging UVs or vertices) keep the previous tint;
-    # the face indices may be stale until the islands are rebuilt.
-    if name not in _dirty and (name in _sel_dirty or entry["sync"] != sync):
-        bm = bmesh.from_edit_mesh(obj.data)
-        if len(bm.faces) == entry["faces"]:
-            sel = _selected_islands(bm, entry["islands"], sync)
-            if sel != entry["sel"] or entry["sync"] != sync:
-                entry["sel"], entry["sync"] = sel, sync
-                entry["batch"] = _selection_batch(entry)
-            _sel_dirty.discard(name)
-        else:
-            _dirty.add(name)
-    return entry["batch"]
-
-
-def _uv_editor_open(context):
-    screen = context.screen
-    return screen is not None and any(
-        a.type == 'IMAGE_EDITOR' and a.spaces.active.mode == 'UV' for a in screen.areas)
-
-
-def _draw_islands():
-    context = bpy.context
-    try:
-        prefs = _prefs(context)
-    except KeyError:
-        return
-    if not prefs.uv_island_colors or context.mode != 'EDIT_MESH' or not _uv_editor_open(context):
-        return
-    space = context.space_data
-    if space is None or not space.overlay.show_overlays:
-        return
-    sync = context.scene.tool_settings.use_uv_select_sync
-    settled = _settled()
-    batches = []
-    for obj in context.objects_in_mode_unique_data:
-        if obj.type == 'MESH':
-            batch = _island_batch(obj, sync, settled)
-            if batch is not None:
-                batches.append((obj.matrix_world, batch))
-    if not batches:
-        return
-    sh = gpu.shader.from_builtin('UNIFORM_COLOR')
-    sh.uniform_float("color", (*prefs.uv_island_color, prefs.uv_island_alpha))
-    proj = gpu.matrix.get_projection_matrix().copy()
-    proj[2] = proj[2] - proj[3] * DEPTH_BIAS  # ndc_z -= DEPTH_BIAS, in perspective and ortho
-    gpu.state.blend_set('ALPHA')
-    gpu.state.depth_test_set('LESS_EQUAL')
-    gpu.state.depth_mask_set(False)
-    with gpu.matrix.push_pop_projection():
-        gpu.matrix.load_projection_matrix(proj)
-        for matrix, batch in batches:
-            with gpu.matrix.push_pop():
-                gpu.matrix.multiply_matrix(matrix)
-                batch.draw(sh)
-    gpu.state.depth_mask_set(True)
-    gpu.state.depth_test_set('NONE')
-    gpu.state.blend_set('NONE')
-
-
-SETTLE_DELAY = 0.3  # seconds without edits before the UV islands are rebuilt
-_last_change = 0.0
+# --------------------------------------------------------------------------- helpers for timers
 
 
 def _modal_running(prefixes=("TRANSFORM_OT", "transform.")):
@@ -905,49 +745,6 @@ def _modal_running(prefixes=("TRANSFORM_OT", "transform.")):
     return False
 
 
-def _settled():
-    return time.monotonic() - _last_change >= SETTLE_DELAY and not _modal_running()
-
-
-def _settle_timer():
-    if not _dirty:
-        return None
-    wait = SETTLE_DELAY - (time.monotonic() - _last_change)
-    if wait > 0:
-        return wait + 0.01
-    if _modal_running():
-        return 0.1
-    wm = bpy.context.window_manager
-    for win in (wm.windows if wm else ()):
-        for area in win.screen.areas:
-            if area.type == 'VIEW_3D':
-                area.tag_redraw()
-    return None
-
-
-@bpy.app.handlers.persistent
-def _on_depsgraph(scene, depsgraph):
-    global _last_change
-    marked = False
-    for upd in depsgraph.updates:
-        if not isinstance(upd.id, (bpy.types.Object, bpy.types.Mesh)):
-            continue
-        # Mesh updates name the mesh; flag every object using it. Updates without geometry
-        # (selection changes) only need the tinted islands picked again.
-        name = upd.id.name
-        for obj_name in list(_island_cache):
-            obj = bpy.data.objects.get(obj_name)
-            if obj is None or obj.name == name or (obj.data is not None and obj.data.name == name):
-                _sel_dirty.add(obj_name)
-                if upd.is_updated_geometry:
-                    _dirty.add(obj_name)
-                    marked = True
-    if marked:
-        _last_change = time.monotonic()
-        if not bpy.app.timers.is_registered(_settle_timer):
-            bpy.app.timers.register(_settle_timer, first_interval=SETTLE_DELAY + 0.01)
-
-
 # --------------------------------------------------------------------------- registration
 
 _classes = (BLAYA_OT_uv_select_mode, BLAYA_OT_uv_click_select, BLAYA_OT_uv_move, BLAYA_OT_uv_straighten,
@@ -963,39 +760,27 @@ def _init_auto():
 
 
 def register():
-    global _overlay_handle
     bpy.types.WindowManager.blaya_uv_auto = BoolProperty(
         name="Smart UV Selection", description="A click picks the vertex, edge or face closest to the mouse",
         default=True)
     for cls in _classes:
         bpy.utils.register_class(cls)
-    _overlay_handle = bpy.types.SpaceView3D.draw_handler_add(_draw_islands, (), 'WINDOW', 'POST_VIEW')
-    if _on_depsgraph not in bpy.app.handlers.depsgraph_update_post:
-        bpy.app.handlers.depsgraph_update_post.append(_on_depsgraph)
     bpy.app.timers.register(_init_auto, first_interval=0.1)
     bpy.app.timers.register(_face_split_watch, first_interval=SPLIT_INTERVAL, persistent=True)
 
 
 def unregister():
-    global _overlay_handle, _running
+    global _running
     if _running is not None:
         try:
             bpy.types.SpaceImageEditor.draw_handler_remove(_running._handle, 'WINDOW')
         except Exception:
             pass
         _running = None
-    if _overlay_handle is not None:
-        bpy.types.SpaceView3D.draw_handler_remove(_overlay_handle, 'WINDOW')
-        _overlay_handle = None
-    if _on_depsgraph in bpy.app.handlers.depsgraph_update_post:
-        bpy.app.handlers.depsgraph_update_post.remove(_on_depsgraph)
     release_custom_pivot()
-    for timer in (_init_auto, _settle_timer, _watch_custom_pivot, _face_split_watch):
+    for timer in (_init_auto, _watch_custom_pivot, _face_split_watch):
         if bpy.app.timers.is_registered(timer):
             bpy.app.timers.unregister(timer)
-    _island_cache.clear()
-    _dirty.clear()
-    _sel_dirty.clear()
     for cls in reversed(_classes):
         bpy.utils.unregister_class(cls)
     del bpy.types.WindowManager.blaya_uv_auto

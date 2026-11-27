@@ -26,8 +26,9 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Maya navigation:** Alt+LMB orbit, Alt+MMB pan, Alt+RMB dolly, Alt+wheel zoom, F to frame.
 - **QWER tools:** select, move, rotate, scale.
 - **Quick rotation (hold E + X / Y / Z):** type an angle in a small box at the mouse and the selected objects turn by it, live, each around its own origin.
-- **Marking menu (RMB):** component modes, object mode, isolate, shading, selection, create, freeze/reset transforms and pivot tools.
-- **Set Empty / Reset Position (marking menu, object mode):** put the selected objects under an Empty at the world center with neutral transforms, ready for FBX export, and put them back after moving them around.
+- **Marking menu (RMB):** component modes (with UV Island), object mode, isolate, shading, selection, create, freeze/reset transforms and pivot tools.
+- **Set Empty / Reset Position / To Collection (marking menu, object mode):** put the selected objects under an Empty at the world center with neutral transforms, ready for FBX export, put them back after moving them around, or turn Empties into collections.
+- **Empties hide like collections:** hiding an Empty hides everything parented under it.
 - **Space bar:** tap toggles perspective/orthographic, hold opens a view pie (ortho views, Quad View, splits, camera) with a label showing the view name and axis.
 - **Quad View, Maya style:** leaving Quad View maximizes the pane under the mouse.
 - **Smooth preview (1 / 2 / 3):** non-destructive, uses its own modifiers and never touches your mesh data or your Subdivision modifiers.
@@ -36,7 +37,7 @@ Blaya makes Blender feel like Maya without fighting it: Alt + mouse navigation, 
 - **Smart Vert (4 in Edit Mode):** merge at the last vertex or the one under the mouse, at the center, along two paths, connect paths, and Slide Extend with edge / face snapping.
 - **Save pie (Ctrl+S):** save, incremental save, previous / next file, most recent, revert, auto save, import / export, append / link, purge and clean out, in one pie.
 - **UV Editor workflow:** QWER tools, smart click selection, 1 to 5 select modes, a UV marking menu, moving faces without stretching their neighbours, Shift+W straighten and D-key pivot placement.
-- **Selected UV islands in 3D:** while a UV Editor is open, the selected UV islands are tinted in the 3D View.
+- **UV Island mode:** a component mode in the marking menu: in the 3D View the UV island under the mouse lights up and a click selects it whole.
 - **Axis indicator presets** for Blender's navigation gizmo.
 - **No DRM, no network access, no telemetry.**
 
@@ -167,15 +168,30 @@ The line snaps to vertices of the selected meshes or to the grid. In orthographi
 | Place the 2D cursor | Shift+RMB (drag to move it) | Shift+RMB | - | Left-click no longer moves the cursor |
 | Edit the pivot with snapping | D+V / D+C / D+F / D+G / D+X | - | Hold D (+ V / C / X) | Places the 2D cursor and uses it as pivot, key hints in the bottom-right corner |
 
-While a UV Editor is open in Edit Mode, the selected UV islands are tinted with a single colour in the 3D View (colour, opacity and on/off in the preferences). With UV Sync Selection on, an island counts as selected when one of its faces is.
+### UV Island mode (3D View)
 
-### Set Empty and Reset Position (marking menu, object mode)
+A component mode for whole UV islands, in the marking menu's top-left slot next to Vertex, Edge and Face. It works from Object Mode or Edit Mode, like the other component modes (from Object Mode it enters Edit Mode). Picking Vertex, Edge, Face or Multi, another select mode in the header, or leaving Edit Mode turns it off. Isolate moved to the first button of the toolbox below the pie.
 
-Two buttons at the bottom of the right-click marking menu's toolbox, under Smooth. They are greyed out until there is something to work on.
+| Action | UV Island mode |
+|---|---|
+| Hover | The island under the mouse is highlighted |
+| Click | Select that island (a click on empty space clears the selection) |
+| Shift+click | Toggle the island |
+| Ctrl+click | Remove the island |
+| Ctrl+Shift+click | Add the island |
+| Box, lasso, Select All | Rounded to whole islands: an island that gained faces is selected whole, one that only lost faces is deselected |
+
+Selected islands are tinted and outlined (colours and opacity in the preferences). The UV Editor keeps working as usual and shows the islands selected. While the mode is on, Blender's own auto save waits (it never saves while a tool is running), so while Blender's auto save is on, Blaya takes an auto save copy instead at the same interval, unless Blaya's Auto Save is already running.
+
+### Set Empty, Reset Position and To Collection (marking menu, object mode)
+
+Three buttons at the bottom of the right-click marking menu's toolbox, under Smooth. They are greyed out until there is something to work on.
 
 - **Set Empty:** creates a Plain Axes Empty at the world center and puts the selected objects inside it. Each object is moved so its own pivot sits on the world center, then its location, rotation and scale are applied, so it ends at 0 / 0 / 1 with its shape unchanged around the pivot. The Empty takes the name of the first selected object in the Outliner without its `_LOD<n>` suffix: `Chair_A_LOD0` ... `Chair_A_LOD3` give `Chair_A`. If an Empty with that name already exists, it is used (and moved to the world center) instead of making a `.001` copy; if another kind of object has the name, the new Empty gets Blender's `.001` suffix and a warning says why. Objects that share mesh data with others get their own copy first. Running it again on the same group reuses its Empty.
-- **Hide like a collection:** hiding a group's Empty (H, Shift+H, the Outliner eye) hides the objects inside it, and showing it shows them again. Objects you hid on their own stay hidden, and a selected object is never hidden by its Empty. Only Set Empty groups do this; other Empties keep Blender's behaviour. Turn it off in the preferences.
-- **Reset Position:** after moving objects or their Empty around (to test modules side by side, say), puts the selected objects' groups back: every object at 0 / 0 / 1 inside its Empty and the Empty on the world center, even if an object was taken out of it.
+- **Reset Position:** after moving objects or their Empty around (to test modules side by side, say), puts the selected objects' groups back: every object at 0 / 0 / 1 inside its Empty and the Empty on the world center, even if an object was taken out of it. Objects parented to the group later (a new part or LOD) join it too, with their rotation and scale applied like Set Empty does.
+- **To Collection:** turns the selected Empties into collections with the same names, inside the collection the Empty was in. Their objects move into the collection, keep their place in the world and are no longer parented. Nested Empties that are also selected become nested collections.
+
+**Empties hide like collections:** hiding any Empty (H, the Outliner eye), however it was made, hides everything parented under it, nested Empties included, and showing it shows them again. Objects you hid on their own stay hidden. Shift+H keeps the selected objects visible even when their Empty gets hidden. Turn it off in the preferences.
 
 ### Smart Vert (edit mode)
 
@@ -222,9 +238,9 @@ Every keymap change lives in [`keymap_patch.py`](keymap_patch.py). It's plain da
 | Viewport | Axis indicator preset: Blender Default, Large Gizmo, Simple Axes, Bold Simple Axes or Don't Change |
 | Pivot Edit | Snap radius, highlight snap points |
 | Clipping Tool | Starting keep mode, capping, vertex snap radius, key hints |
-| UV Editor | Smart selection, auto-detach on move, selected island tint in 3D (colour and opacity), key hints |
+| UV Editor | Smart selection, auto-detach on move, UV Island highlight in the 3D View (on/off, selected and hover colours, opacity), key hints |
 | Smooth Preview | Shade the preview smooth (through a temporary modifier, never on the mesh) |
-| Set Empty Groups | Groups hide and show their objects like a collection |
+| Empties | Empties hide and show their objects like a collection |
 | Save Pie | Export formats shown, FBX scale for Unity, auto save interval, how many copies to keep, save on undo / redo panel, auto save folder |
 
 ## Known limitations

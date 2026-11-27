@@ -108,6 +108,8 @@ class BLAYA_OT_component_mode(bpy.types.Operator):
         return obj is not None and obj.type in {'MESH', 'CURVE', 'SURFACE', 'LATTICE', 'ARMATURE', 'FONT', 'META'}
 
     def execute(self, context):
+        from . import ops_uvisland
+        ops_uvisland.leave(context)  # picking vertex / edge / face / multi ends UV Island mode
         obj = context.active_object
         if obj.mode != 'EDIT':
             bpy.ops.object.mode_set(mode='EDIT')

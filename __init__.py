@@ -13,7 +13,7 @@ import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
 from . import (keymap_install, menus, ops_clip, ops_empty, ops_mesh, ops_pivot, ops_rotate, ops_save, ops_smartvert,
-               ops_uv, ops_view, ui_axis)
+               ops_uv, ops_uvisland, ops_view, ui_axis)
 
 
 class BlayaPreferences(bpy.types.AddonPreferences):
@@ -138,17 +138,23 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         default=True,
     )
     uv_island_colors: BoolProperty(
-        name="Selected Islands in 3D",
-        description="In Edit Mode, while a UV Editor is open, tint the selected UV islands in the 3D View",
+        name="UV Island Highlight",
+        description="In UV Island mode, tint and outline the selected islands and the island under the mouse "
+                    "in the 3D View",
         default=True,
     )
     uv_island_alpha: FloatProperty(
-        name="Island Colour Opacity", default=0.25, min=0.05, max=1.0, subtype='FACTOR',
+        name="Island Tint Opacity", default=0.25, min=0.05, max=1.0, subtype='FACTOR',
     )
     uv_island_color: FloatVectorProperty(
-        name="Island Colour",
-        description="Tint of the selected UV islands in the 3D View",
+        name="Selected Island Colour",
+        description="Tint and outline of the selected UV islands",
         subtype='COLOR_GAMMA', size=3, min=0.0, max=1.0, default=(0.2, 0.75, 1.0),
+    )
+    uv_island_hover_color: FloatVectorProperty(
+        name="Hover Island Colour",
+        description="Tint and outline of the UV island under the mouse",
+        subtype='COLOR_GAMMA', size=3, min=0.0, max=1.0, default=(1.0, 0.85, 0.3),
     )
     uv_show_hints: BoolProperty(
         name="Show Key Hints",
@@ -190,8 +196,8 @@ class BlayaPreferences(bpy.types.AddonPreferences):
     save_pie_show_gltf: BoolProperty(name="glTF", default=False)
     save_pie_show_stl: BoolProperty(name="STL", default=False)
     group_hide_children: BoolProperty(
-        name="Groups Hide Like Collections",
-        description="Hiding or showing a Set Empty group's Empty also hides or shows the objects inside it, "
+        name="Empties Hide Like Collections",
+        description="Hiding or showing an Empty also hides or shows the objects parented under it, "
                     "like a collection",
         default=True,
     )
@@ -250,6 +256,7 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         sub = col.column()
         sub.active = self.uv_island_colors
         sub.prop(self, "uv_island_color")
+        sub.prop(self, "uv_island_hover_color")
         sub.prop(self, "uv_island_alpha", slider=True)
         col.prop(self, "uv_show_hints")
         layout.separator()
@@ -258,7 +265,7 @@ class BlayaPreferences(bpy.types.AddonPreferences):
         col.prop(self, "smooth_preview_shade_smooth")
         layout.separator()
         col = layout.column()
-        col.label(text="Set Empty Groups", icon='EMPTY_AXIS')
+        col.label(text="Empties", icon='EMPTY_AXIS')
         col.prop(self, "group_hide_children")
         layout.separator()
         col = layout.column()
@@ -285,8 +292,8 @@ class BLAYA_OT_activate_keymap(bpy.types.Operator):
         return {'FINISHED'}
 
 
-_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_empty, ops_rotate, ops_save, ops_smartvert, ops_uv, menus,
-            ui_axis)
+_modules = (ops_view, ops_pivot, ops_clip, ops_mesh, ops_empty, ops_rotate, ops_save, ops_smartvert, ops_uv,
+            ops_uvisland, menus, ui_axis)
 _classes = (BlayaPreferences, BLAYA_OT_activate_keymap)
 
 
