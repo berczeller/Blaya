@@ -829,3 +829,9 @@ KEYMAP_ADD.setdefault('Mesh', []).extend([
     ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'ctrl': True, 'alt': True}, _p(mode='CONNECT')),
     ('blaya.smart_vert', {'type': 'FOUR', 'value': 'PRESS', 'shift': True, 'alt': True}, _p(slideoverride=True)),
 ])
+
+# ---------------------------------------------------------------------------- empties
+# Shift+H goes through Blaya, so a selected object stays visible when the Empty it is parented to gets hidden.
+for _km in ('Object Mode', 'Outliner'):
+    KEYMAP_ADD.setdefault(_km, []).append(
+        ('blaya.hide_unselected', {'type': 'H', 'value': 'PRESS', 'shift': True}, None))
