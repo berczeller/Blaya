@@ -4,11 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-27
+
 ### Added
 - Empties hide and show like collections, however they were made: hiding an Empty (H, the Outliner eye) hides everything parented under it, nested Empties included, and showing it brings them back, except objects hidden on their own. Shift+H keeps the selected objects visible. Can be turned off in the preferences
 - Empty to Collection in the marking menu, next to Set Empty: turns the selected Empties into collections with the same names, with their objects inside and in the same place
 - UV Island mode in the marking menu, next to Vertex, Edge and Face, from Object or Edit Mode: in the 3D View the UV island under the mouse is highlighted, a click selects it whole (Shift toggles, Ctrl removes, Ctrl+Shift adds, a click on empty space clears), and box or lasso selections are rounded to whole islands
-
 - Unity Export in the Ctrl+S pie (top-right) and the sidebar's Blaya tab: exports each root of an export list (an Empty, a mesh or a collection) to its own FBX for Unity, with Forward -Z, Up Y, rotation 0 and scale 1. Each root can be moved to the origin for the export and its LOD parts merged per level; moving parts keep their hinges. Each root remembers the folder, scale settings and object names of its first export, and a popup reports lowercase _lod, .001 names, renamed objects, unapplied transforms, material problems and scene units. Smooth Preview is left out, and the scene, Edit Mode and UV Island mode are put back afterwards
 - Empty to Collection keeps an Empty's place in the export list, as a collection
 
@@ -124,7 +125,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Clipping Tool (Shift+C) with capping, preview, readout, in-tool undo and key hints
 - Axis indicator presets
 
-[Unreleased]: https://github.com/berczeller/Blaya/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/berczeller/Blaya/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/berczeller/Blaya/releases/tag/0.8.0
 [0.7.0]: https://github.com/berczeller/Blaya/releases/tag/0.7.0
 [0.6.0]: https://github.com/berczeller/Blaya/releases/tag/0.6.0
 [0.5.1]: https://github.com/berczeller/Blaya/releases/tag/0.5.1
